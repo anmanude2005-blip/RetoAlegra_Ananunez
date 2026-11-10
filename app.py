@@ -205,6 +205,146 @@ elif modulo == "Productos":
     else:
         st.info("Todavía no hay productos registrados.")
 
+# RECETAS DE FABRICACIÓN
+elif modulo == "Recetas":
+
+    st.title("Recetas de fabricación")
+    st.caption("Define los materiales necesarios para fabricar cada producto.")
+
+    products = get_products()
+
+    finished_products = [
+        p for p in products
+        if p["product_type"] == "Terminado" and p["active"] == 1
+    ]
+
+    components_list = [
+        p for p in products
+        if p["product_type"] == "Componente" and p["active"] == 1
+    ]
+
+    with st.expander("＋ Crear nueva receta", expanded=False):
+
+        if not finished_products:
+            st.warning("Primero debes registrar un producto terminado.")
+
+        elif not components_list:
+            st.warning("Primero debes registrar componentes.")
+
+        else:
+            with st.form("form_receta"):
+
+                product_options = {
+                    p["id"]: p["name"]
+                    for p in finished_products
+                }
+
+                product_id = st.selectbox(
+                    "Producto que vamos a fabricar",
+                    options=list(product_options.keys()),
+                    format_func=lambda x: product_options[x]
+                )
+
+                recipe_name = st.text_input(
+                    "Nombre de la receta",
+                    placeholder="Ej. Receta estándar de fabricación"
+                )
+
+                st.markdown("**Componentes necesarios por unidad**")
+
+                component_options = {
+                    p["id"]: f'{p["code"]} - {p["name"]}'
+                    for p in components_list
+                }
+
+                selected_components = st.multiselect(
+                    "Selecciona los componentes",
+                    options=list(component_options.keys()),
+                    format_func=lambda x: component_options[x]
+                )
+
+                quantities = {}
+
+                for component_id in selected_components:
+                    component_name = component_options[component_id]
+
+                    quantities[component_id] = st.number_input(
+                        f"Cantidad de {component_name}",
+                        min_value=0.01,
+                        value=1.0,
+                        step=1.0,
+                        key=f"quantity_{component_id}"
+                    )
+
+                submitted = st.form_submit_button(
+                    "Guardar receta",
+                    use_container_width=True
+                )
+
+                if submitted:
+
+                    if not recipe_name.strip():
+                        st.error("Debes ingresar un nombre para la receta.")
+
+                    elif not selected_components:
+                        st.error("Selecciona al menos un componente.")
+
+                    else:
+                        try:
+                            components = [
+                                (component_id, quantities[component_id])
+                                for component_id in selected_components
+                            ]
+
+                            create_recipe(
+                                product_id,
+                                recipe_name.strip(),
+                                components
+                            )
+
+                            st.success("Receta creada correctamente.")
+                            st.rerun()
+
+                        except Exception as error:
+                            st.error(f"No fue posible crear la receta: {error}")
+
+    st.divider()
+    st.subheader("Recetas registradas")
+
+    recipes = get_recipes()
+
+    if recipes:
+
+        for recipe in recipes:
+
+            with st.expander(
+                f'{recipe["product_name"]} | Versión {recipe["version"]}'
+            ):
+
+                details = get_recipe_details(recipe["id"])
+
+                if details:
+                    st.dataframe(
+                        pd.DataFrame(details),
+                        use_container_width=True,
+                        hide_index=True
+                    )
+
+                    cost = calculate_recipe_cost(recipe["id"])
+
+                    st.metric(
+                        "Costo estimado de materiales por unidad",
+                        f"${cost:,.0f} COP"
+                    )
+
+                st.caption(
+                    f'Nombre: {recipe["recipe_name"]} | '
+                    f'Estado: {"Activa" if recipe["active"] else "Inactiva"}'
+                )
+
+    else:
+        st.info("Todavía no hay recetas registradas.")
+
 
 
 # INVENTARIO
