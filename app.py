@@ -17,6 +17,7 @@ from recipes import (
     calculate_recipe_cost,
     create_recipe
 )
+from demands import create_demand, get_demands, get_demand_requirements
 
 # Configuración de la aplicación
 st.set_page_config(
