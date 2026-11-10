@@ -57,3 +57,47 @@ def create_product(code, name, product_type, unit, unit_cost, initial_stock=0):
 
     finally:
         conn.close()
+----------
+
+def update_product(product_id, name, unit, unit_cost):
+    """Actualiza los datos básicos de un producto."""
+
+    conn = get_connection()
+
+    try:
+        conn.execute("""
+            UPDATE products
+            SET name = ?, unit = ?, unit_cost = ?
+            WHERE id = ?
+        """, (name, unit, unit_cost, product_id))
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
+
+def deactivate_product(product_id):
+    """Inactiva un producto sin eliminar su historial."""
+
+    conn = get_connection()
+
+    try:
+        conn.execute("""
+            UPDATE products
+            SET active = 0
+            WHERE id = ?
+        """, (product_id,))
+
+        conn.commit()
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
