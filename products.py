@@ -57,7 +57,7 @@ def create_product(code, name, product_type, unit, unit_cost, initial_stock=0):
 
     finally:
         conn.close()
-----------
+#----------
 
 def update_product(product_id, name, unit, unit_cost):
     """Actualiza los datos básicos de un producto."""
