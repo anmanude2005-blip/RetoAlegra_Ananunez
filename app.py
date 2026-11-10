@@ -1,6 +1,8 @@
 
 import streamlit as st
 import pandas as pd
+from products import create_product
+import sqlite3
 
 from database import init_db
 from products import get_products
@@ -111,21 +113,92 @@ if modulo == "Inicio":
     )
 
 
+
 # CATÁLOGO DE PRODUCTOS
 elif modulo == "Productos":
 
     st.title("Catálogo de productos")
+    st.caption("Administra productos terminados y componentes.")
+
+    with st.expander("＋ Registrar nuevo producto", expanded=False):
+
+        with st.form("form_producto"):
+
+            col1, col2 = st.columns(2)
+
+            with col1:
+                code = st.text_input("Código de referencia")
+                name = st.text_input("Nombre del producto")
+                product_type = st.selectbox(
+                    "Tipo de producto",
+                    ["Componente", "Terminado"]
+                )
+
+            with col2:
+                unit = st.selectbox(
+                    "Unidad de medida",
+                    ["Unidad", "Kilogramo", "Litro", "Metro", "Caja"]
+                )
+                unit_cost = st.number_input(
+                    "Costo unitario (COP)",
+                    min_value=0.0,
+                    step=100.0
+                )
+                initial_stock = st.number_input(
+                    "Existencia inicial",
+                    min_value=0.0,
+                    step=1.0
+                )
+
+            submitted = st.form_submit_button(
+                "Guardar producto",
+                use_container_width=True
+            )
+
+            if submitted:
+
+                if not code.strip() or not name.strip():
+                    st.error("Debes ingresar el código y el nombre.")
+
+                else:
+                    try:
+                        create_product(
+                            code.strip().upper(),
+                            name.strip(),
+                            product_type,
+                            unit,
+                            unit_cost,
+                            initial_stock
+                        )
+
+                        st.success("Producto registrado correctamente.")
+                        st.rerun()
+
+                    except sqlite3.IntegrityError:
+                        st.error(
+                            "Este código ya existe. "
+                            "Verifica la referencia."
+                        )
+
+                    except Exception as error:
+                        st.error(f"No fue posible registrar el producto: {error}")
+
+    st.divider()
+    st.subheader("Productos registrados")
 
     products = get_products()
 
     if products:
+        df = pd.DataFrame(products)
+
         st.dataframe(
-            pd.DataFrame(products),
+            df,
             use_container_width=True,
             hide_index=True
         )
     else:
         st.info("Todavía no hay productos registrados.")
+
 
 
 # INVENTARIO
