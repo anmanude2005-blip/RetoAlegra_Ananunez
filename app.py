@@ -671,6 +671,187 @@ elif modulo == "Compras":
     else:
         st.info("Todavía no hay solicitudes de compra.")
 
+# PRODUCCIÓN
+elif modulo == "Producción":
+
+    st.title("Órdenes de producción")
+    st.caption("Planifica, libera y registra avances de fabricación.")
+
+    products = get_products()
+
+    finished_products = [
+        p for p in products
+        if p["product_type"] == "Terminado" and p["active"] == 1
+    ]
+
+    demands = get_demands()
+
+    with st.expander("＋ Crear orden de producción", expanded=False):
+
+        if not finished_products:
+            st.warning("Primero debes registrar un producto terminado.")
+
+        else:
+            with st.form("form_orden_produccion"):
+
+                product_options = {
+                    p["id"]: f'{p["code"]} - {p["name"]}'
+                    for p in finished_products
+                }
+
+                product_id = st.selectbox(
+                    "Producto que se va a fabricar",
+                    options=list(product_options.keys()),
+                    format_func=lambda x: product_options[x]
+                )
+
+                code = st.text_input(
+                    "Código de la orden",
+                    placeholder="Ej. OP-001"
+                )
+
+                quantity = st.number_input(
+                    "Cantidad planeada",
+                    min_value=1,
+                    value=15,
+                    step=1
+                )
+
+                demand_options = {
+                    d["id"]: d["code"]
+                    for d in demands
+                }
+
+                demand_id = st.selectbox(
+                    "Demanda relacionada (opcional)",
+                    options=[0] + list(demand_options.keys()),
+                    format_func=lambda x: (
+                        "Sin asociar" if x == 0 else demand_options[x]
+                    )
+                )
+
+                submitted = st.form_submit_button(
+                    "Crear orden",
+                    use_container_width=True
+                )
+
+                if submitted:
+
+                    if not code.strip():
+                        st.error("Debes ingresar un código para la orden.")
+
+                    else:
+                        try:
+                            create_production_order(
+                                code.strip().upper(),
+                                product_id,
+                                quantity,
+                                demand_id if demand_id != 0 else None
+                            )
+
+                            st.success("Orden creada en estado borrador.")
+                            st.rerun()
+
+                        except Exception as error:
+                            st.error(f"No fue posible crear la orden: {error}")
+
+    st.divider()
+    st.subheader("Órdenes registradas")
+
+    orders = get_production_orders()
+
+    if orders:
+
+        for order in orders:
+
+            with st.expander(
+                f'{order["code"]} | {order["product_name"]} | {order["status"]}'
+            ):
+
+                col1, col2, col3 = st.columns(3)
+
+                col1.metric("Cantidad planeada", order["planned_quantity"])
+                col2.metric("Cantidad producida", order["produced_quantity"])
+                col3.metric("Cantidad pendiente", order["pending_quantity"])
+
+                st.write(f'Producto: {order["product_code"]} - {order["product_name"]}')
+
+                if order["status"] == "Borrador":
+
+                    if st.button(
+                        "Liberar orden y reservar materiales",
+                        key=f'release_{order["id"]}'
+                    ):
+
+                        try:
+                            release_production_order(order["id"])
+
+                            st.success("Orden liberada y materiales reservados.")
+                            st.rerun()
+
+                        except Exception as error:
+                            st.error(f"No fue posible liberar la orden: {error}")
+
+                elif order["status"] == "En producción":
+
+                    st.markdown("**Registrar avance de fabricación**")
+
+                    with st.form(f'avance_{order["id"]}'):
+
+                        advance_code = st.text_input(
+                            "Código del avance",
+                            placeholder="Ej. ADV-001",
+                            key=f'advance_code_{order["id"]}'
+                        )
+
+                        advance_quantity = st.number_input(
+                            "Unidades fabricadas en este avance",
+                            min_value=0.0,
+                            max_value=float(order["pending_quantity"]),
+                            value=float(order["pending_quantity"]),
+                            step=1.0,
+                            key=f'advance_quantity_{order["id"]}'
+                        )
+
+                        notes = st.text_input(
+                            "Observaciones",
+                            key=f'advance_notes_{order["id"]}'
+                        )
+
+                        advance_submitted = st.form_submit_button(
+                            "Registrar avance",
+                            use_container_width=True
+                        )
+
+                        if advance_submitted:
+
+                            if not advance_code.strip():
+                                st.error("Debes ingresar un código para el avance.")
+
+                            elif advance_quantity <= 0:
+                                st.error("La cantidad debe ser mayor que cero.")
+
+                            else:
+                                try:
+                                    register_production_advance(
+                                        advance_code.strip().upper(),
+                                        order["id"],
+                                        advance_quantity,
+                                        notes
+                                    )
+
+                                    st.success("Avance de producción registrado.")
+                                    st.rerun()
+
+                                except Exception as error:
+                                    st.error(f"No fue posible registrar el avance: {error}")
+
+                elif order["status"] == "Completada":
+                    st.success("Esta orden ya fue completada.")
+
+    else:
+        st.info("Todavía no hay órdenes de producción.")
+
 
 # INVENTARIO
 elif modulo == "Inventario":
