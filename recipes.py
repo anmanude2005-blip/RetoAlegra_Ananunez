@@ -63,7 +63,7 @@ def calculate_recipe_cost(recipe_id):
     conn.close()
     return result[0] or 0
 
------------
+#-----------
 
 
 def create_recipe(product_id, recipe_name, components):
