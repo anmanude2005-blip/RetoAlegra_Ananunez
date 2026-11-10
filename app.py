@@ -3,12 +3,19 @@ import streamlit as st
 import pandas as pd
 import sqlite3
 
+
 from database import init_db
 from products import  create_product, get_products
 from inventory import get_inventory, get_inventory_summary
 from reports import (
     get_production_summary,
     get_purchase_summary
+)
+from recipes import (
+    get_recipes,
+    get_recipe_details,
+    calculate_recipe_cost,
+    create_recipe
 )
 
 # Configuración de la aplicación
