@@ -24,6 +24,14 @@ from purchases import (
     get_purchase_details,
     receive_purchase
 )
+from production import (
+    create_production_order,
+    release_production_order,
+    register_production_advance,
+    get_production_orders
+)
+
+from demands import get_demands
 
 # Configuración de la aplicación
 st.set_page_config(
