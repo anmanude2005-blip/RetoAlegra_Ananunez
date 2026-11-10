@@ -325,7 +325,7 @@ def register_production_advance(code, order_id, quantity, notes=""):
     finally:
         conn.close()
 
-----------------
+#----------------
 
 def get_production_orders():
     """Consulta las órdenes de producción."""
