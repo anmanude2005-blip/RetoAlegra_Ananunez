@@ -62,3 +62,68 @@ def calculate_recipe_cost(recipe_id):
 
     conn.close()
     return result[0] or 0
+
+-----------
+
+
+def create_recipe(product_id, recipe_name, components):
+    """
+    Crea una nueva versión de la receta.
+
+    components debe tener esta estructura:
+    [(component_id, quantity), ...]
+    """
+
+    if not components:
+        raise ValueError("La receta debe tener al menos un componente.")
+
+    conn = get_connection()
+
+    try:
+        cursor = conn.cursor()
+
+        # Identificar la última versión
+        last_version = cursor.execute("""
+            SELECT MAX(version)
+            FROM recipes
+            WHERE product_id = ?
+        """, (product_id,)).fetchone()[0]
+
+        new_version = (last_version or 0) + 1
+
+        # Desactivar la versión anterior
+        cursor.execute("""
+            UPDATE recipes
+            SET active = 0
+            WHERE product_id = ?
+        """, (product_id,))
+
+        # Crear la nueva versión
+        cursor.execute("""
+            INSERT INTO recipes
+            (product_id, version, name, active)
+            VALUES (?, ?, ?, 1)
+        """, (product_id, new_version, recipe_name))
+
+        recipe_id = cursor.lastrowid
+
+        # Registrar sus componentes
+        cursor.executemany("""
+            INSERT INTO recipe_details
+            (recipe_id, component_id, quantity)
+            VALUES (?, ?, ?)
+        """, [
+            (recipe_id, component_id, quantity)
+            for component_id, quantity in components
+        ])
+
+        conn.commit()
+        return recipe_id
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
+
