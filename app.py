@@ -31,8 +31,6 @@ from production import (
     get_production_orders
 )
 
-from demands import get_demands
-
 # Configuración de la aplicación
 st.set_page_config(
     page_title="SYNTHEX | Gestión de fabricación",
