@@ -324,3 +324,34 @@ def register_production_advance(code, order_id, quantity, notes=""):
 
     finally:
         conn.close()
+
+----------------
+
+def get_production_orders():
+    """Consulta las órdenes de producción."""
+
+    conn = get_connection()
+
+    rows = conn.execute("""
+        SELECT
+            po.id,
+            po.code,
+            po.demand_id,
+            po.product_id,
+            p.code AS product_code,
+            p.name AS product_name,
+            po.recipe_id,
+            po.planned_quantity,
+            po.produced_quantity,
+            (po.planned_quantity - po.produced_quantity)
+                AS pending_quantity,
+            po.status,
+            po.created_at
+        FROM production_orders po
+        JOIN products p ON po.product_id = p.id
+        ORDER BY po.id DESC
+    """).fetchall()
+
+    conn.close()
+    return [dict(row) for row in rows]
+
