@@ -221,7 +221,7 @@ def receive_purchase(code, purchase_id, items):
     finally:
         conn.close()
 
----------------
+#---------------
 
 def get_purchase_details(purchase_id):
     """Consulta los materiales y cantidades de una solicitud."""
