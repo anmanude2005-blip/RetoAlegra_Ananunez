@@ -347,6 +347,142 @@ elif modulo == "Recetas":
         st.info("Todavía no hay recetas registradas.")
 
 
+# DEMANDAS
+elif modulo == "Demandas":
+
+    st.title("Planificación de demandas")
+    st.caption("Registra necesidades de productos y calcula materiales.")
+
+    products = get_products()
+
+    finished_products = [
+        p for p in products
+        if p["product_type"] == "Terminado" and p["active"] == 1
+    ]
+
+    with st.expander("＋ Registrar nueva demanda", expanded=False):
+
+        if not finished_products:
+            st.warning("Primero debes registrar un producto terminado.")
+
+        else:
+            with st.form("form_demanda"):
+
+                product_options = {
+                    p["id"]: f'{p["code"]} - {p["name"]}'
+                    for p in finished_products
+                }
+
+                product_id = st.selectbox(
+                    "Producto solicitado",
+                    options=list(product_options.keys()),
+                    format_func=lambda x: product_options[x]
+                )
+
+                quantity = st.number_input(
+                    "Cantidad adicional requerida",
+                    min_value=1,
+                    value=20,
+                    step=1
+                )
+
+                description = st.text_input(
+                    "Descripción",
+                    placeholder="Ej. Demanda de producción para cliente"
+                )
+
+                code = st.text_input(
+                    "Código de demanda",
+                    placeholder="Ej. DEM-002"
+                )
+
+                submitted = st.form_submit_button(
+                    "Registrar demanda",
+                    use_container_width=True
+                )
+
+                if submitted:
+
+                    if not code.strip():
+                        st.error("Debes ingresar un código de demanda.")
+
+                    else:
+                        try:
+                            create_demand(
+                                code.strip().upper(),
+                                description.strip(),
+                                [(product_id, quantity)]
+                            )
+
+                            st.success("Demanda registrada correctamente.")
+                            st.rerun()
+
+                        except Exception as error:
+                            st.error(f"No fue posible registrar la demanda: {error}")
+
+    st.divider()
+    st.subheader("Demandas registradas")
+
+    demands = get_demands()
+
+    if demands:
+
+        for demand in demands:
+
+            with st.expander(
+                f'{demand["code"]} | {demand["status"]}'
+            ):
+
+                st.write(demand["description"] or "Sin descripción")
+
+                st.write(
+                    f'Unidades solicitadas: {demand["total_units"] or 0}'
+                )
+
+                requirements = get_demand_requirements(demand["id"])
+
+                if requirements:
+
+                    st.markdown("**Materiales requeridos**")
+
+                    df = pd.DataFrame(requirements)
+
+                    st.dataframe(
+                        df[[
+                            "code",
+                            "name",
+                            "required_quantity",
+                            "physical_stock",
+                            "shortage"
+                        ]],
+                        use_container_width=True,
+                        hide_index=True
+                    )
+
+                    total_shortages = sum(
+                        item["shortage"] for item in requirements
+                    )
+
+                    if total_shortages > 0:
+                        st.warning(
+                            f"Se identificaron {total_shortages:g} "
+                            "unidades faltantes de materiales."
+                        )
+                    else:
+                        st.success(
+                            "Hay existencias físicas suficientes "
+                            "para atender los requerimientos."
+                        )
+
+                else:
+                    st.info(
+                        "No se encontraron componentes. "
+                        "Verifica que el producto tenga una receta activa."
+                    )
+
+    else:
+        st.info("Todavía no hay demandas registradas.")
+
 
 # INVENTARIO
 elif modulo == "Inventario":
