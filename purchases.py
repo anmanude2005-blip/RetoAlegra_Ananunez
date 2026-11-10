@@ -220,3 +220,33 @@ def receive_purchase(code, purchase_id, items):
 
     finally:
         conn.close()
+
+---------------
+
+def get_purchase_details(purchase_id):
+    """Consulta los materiales y cantidades de una solicitud."""
+
+    conn = get_connection()
+
+    rows = conn.execute("""
+        SELECT
+            pd.product_id,
+            p.code,
+            p.name,
+            pd.quantity AS requested_quantity,
+            pd.unit_cost,
+            COALESCE((
+                SELECT SUM(prd.quantity)
+                FROM purchase_receipt_details prd
+                JOIN purchase_receipts pr
+                    ON prd.receipt_id = pr.id
+                WHERE pr.purchase_id = pd.purchase_id
+                AND prd.product_id = pd.product_id
+            ), 0) AS received_quantity
+        FROM purchase_details pd
+        JOIN products p ON p.id = pd.product_id
+        WHERE pd.purchase_id = ?
+    """, (purchase_id,)).fetchall()
+
+    conn.close()
+    return [dict(row) for row in rows]
