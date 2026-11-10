@@ -1,11 +1,10 @@
 
 import streamlit as st
 import pandas as pd
-from products import create_product
 import sqlite3
 
 from database import init_db
-from products import get_products
+from products import  create_product, get_products
 from inventory import get_inventory, get_inventory_summary
 from reports import (
     get_production_summary,
