@@ -18,6 +18,12 @@ from recipes import (
     create_recipe
 )
 from demands import create_demand, get_demands, get_demand_requirements
+from purchases import (
+    create_purchase_request,
+    get_purchase_requests,
+    get_purchase_details,
+    receive_purchase
+)
 
 # Configuración de la aplicación
 st.set_page_config(
