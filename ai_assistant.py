@@ -1,6 +1,7 @@
 
 import json
 import streamlit as st
+import time
 from google import genai
 from google.genai import types
 
@@ -56,16 +57,36 @@ def analyze_material_shortages(analysis_context):
     try:
         client = genai.Client(api_key=api_key)
 
-        response = client.models.generate_content(
-            model=MODEL_NAME,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                max_output_tokens=1200,
-                thinking_config=types.ThinkingConfig(
-                    thinking_level="low"
+               response = None
+
+        for attempt in range(3):
+            try:
+                response = client.models.generate_content(
+                    model=MODEL_NAME,
+                    contents=prompt,
+                    config=types.GenerateContentConfig(
+                        max_output_tokens=1200,
+                        thinking_config=types.ThinkingConfig(
+                            thinking_level="low"
+                        )
+                    )
                 )
-            )
-        )
+                break
+
+            except Exception as error:
+                error_message = str(error).lower()
+
+                temporary_error = (
+                    "503" in error_message
+                    or "unavailable" in error_message
+                    or "high demand" in error_message
+                )
+
+                if temporary_error and attempt < 2:
+                    time.sleep(2 ** (attempt + 1))
+                    continue
+
+                raise
 
         if not response.text:
             raise RuntimeError(
