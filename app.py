@@ -1056,6 +1056,7 @@ elif modulo == "Reportes":
 
     costs = get_production_costs()
 
+   
     if costs:
 
         costs_df = pd.DataFrame(costs)
@@ -1065,28 +1066,84 @@ elif modulo == "Reportes":
             "finished_product": "Producto terminado",
             "planned_quantity": "Cantidad planeada",
             "produced_quantity": "Cantidad producida",
+            "estimated_unit_material_cost": "Costo estimado por unidad (COP)",
             "material_cost": "Costo real de materiales (COP)"
         })
 
-        # COSTO REAL POR UNIDAD
-        costs_df["Costo por unidad (COP)"] = costs_df.apply(
+        # Las órdenes antiguas no tienen costo estimado histórico
+        costs_df["Costo estimado por unidad (COP)"] = (
+            costs_df["Costo estimado por unidad (COP)"].apply(
+                lambda value: value if value > 0 else None
+            )
+        )
+
+        # Costo estimado total de la orden
+        costs_df["Costo estimado total (COP)"] = costs_df.apply(
             lambda row: (
-                row["Costo real de materiales (COP)"] /
-                row["Cantidad producida"]
-                if row["Cantidad producida"] > 0 else 0
+                row["Costo estimado por unidad (COP)"] *
+                row["Cantidad planeada"]
+                if pd.notna(row["Costo estimado por unidad (COP)"])
+                else None
             ),
             axis=1
         )
 
-        costs_display = costs_df.copy()
+        # Costo real por unidad producida
+        costs_df["Costo real por unidad (COP)"] = costs_df.apply(
+            lambda row: (
+                row["Costo real de materiales (COP)"] /
+                row["Cantidad producida"]
+                if row["Cantidad producida"] > 0 else None
+            ),
+            axis=1
+        )
 
-        for column in [
+        # Variación frente al costo estimado de las unidades producidas
+        costs_df["Variación (COP)"] = costs_df.apply(
+            lambda row: (
+                row["Costo real de materiales (COP)"] -
+                (
+                    row["Costo estimado por unidad (COP)"] *
+                    row["Cantidad producida"]
+                )
+                if (
+                    pd.notna(row["Costo estimado por unidad (COP)"])
+                    and row["Cantidad producida"] > 0
+                )
+                else None
+            ),
+            axis=1
+        )
+
+        st.markdown("**Comparación de costos por orden**")
+
+        columns_to_show = [
+            "Orden",
+            "Producto terminado",
+            "Cantidad planeada",
+            "Cantidad producida",
+            "Costo estimado por unidad (COP)",
+            "Costo estimado total (COP)",
             "Costo real de materiales (COP)",
-            "Costo por unidad (COP)"
-        ]:
-            costs_display[column] = costs_display[column].map(
+            "Costo real por unidad (COP)",
+            "Variación (COP)"
+        ]
+
+        costs_display = costs_df[columns_to_show].copy()
+
+        currency_columns = [
+            "Costo estimado por unidad (COP)",
+            "Costo estimado total (COP)",
+            "Costo real de materiales (COP)",
+            "Costo real por unidad (COP)",
+            "Variación (COP)"
+        ]
+
+        for column in currency_columns:
+            costs_display[column] = costs_display[column].apply(
                 lambda value: (
                     "$ " + f"{value:,.0f}".replace(",", ".") + " COP"
+                    if pd.notna(value) else "No disponible"
                 )
             )
 
@@ -1096,22 +1153,26 @@ elif modulo == "Reportes":
             hide_index=True
         )
 
-        st.markdown("**Costo de materiales por orden**")
+        st.caption(
+            "La variación compara el costo real acumulado con el costo "
+            "estimado para las unidades efectivamente producidas. "
+            "Un valor positivo indica un costo superior al estimado; "
+            "uno negativo indica un costo inferior."
+        )
 
-        cost_chart = costs_df.set_index("Orden")[
-            ["Costo real de materiales (COP)"]
+        # Gráfico comparativo por unidad
+        comparison_chart = costs_df.set_index("Orden")[
+            [
+                "Costo estimado por unidad (COP)",
+                "Costo real por unidad (COP)"
+            ]
         ]
 
-        st.bar_chart(cost_chart)
+        st.markdown("**Costo estimado vs. real por unidad**")
+        st.bar_chart(comparison_chart)
 
     else:
         st.info("Aún no hay órdenes de producción registradas.")
-
-    st.caption(
-        "Los costos presentados corresponden a los materiales "
-        "consumidos y registrados en producción. "
-        "No incluyen mano de obra ni costos indirectos."
-    )
 
 
 # MÓDULOS PENDIENTES DE INTERFAZ
