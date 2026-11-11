@@ -93,11 +93,13 @@ def init_db():
     # 7. Solicitudes de compra
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS purchase_requests (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            code TEXT UNIQUE NOT NULL,
-            status TEXT NOT NULL DEFAULT 'Pendiente',
-            created_at TEXT DEFAULT CURRENT_TIMESTAMP
-        )
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    code TEXT UNIQUE NOT NULL,
+    demand_id INTEGER,
+    status TEXT NOT NULL DEFAULT 'Pendiente',
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (demand_id) REFERENCES demands(id)
+)
     """)
 
     # 8. Detalle de solicitudes de compra
