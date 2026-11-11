@@ -62,8 +62,8 @@ def analyze_material_shortages(analysis_context):
             model=MODEL_NAME,
             contents=prompt,
             config=types.GenerateContentConfig(
-                temperature=0.2,
                 max_output_tokens=700
+            )
             )
         )
 
