@@ -14,7 +14,6 @@ def analyze_material_shortages(analysis_context):
     para apoyar las decisiones de producción.
     """
 
-    # Verificar que exista la clave API
     api_key = st.secrets.get("GEMINI_API_KEY")
 
     if not api_key:
@@ -22,7 +21,6 @@ def analyze_material_shortages(analysis_context):
             "No se encuentra la clave GEMINI_API_KEY en Streamlit."
         )
 
-    # Preparar los datos recibidos desde SYNTHEX
     context = json.dumps(
         analysis_context,
         ensure_ascii=False,
@@ -64,11 +62,12 @@ def analyze_material_shortages(analysis_context):
             config=types.GenerateContentConfig(
                 max_output_tokens=700
             )
-            )
         )
 
         if not response.text:
-            raise RuntimeError("El modelo no devolvió una respuesta.")
+            raise RuntimeError(
+                "El modelo no devolvió una respuesta."
+            )
 
         return response.text.strip()
 
