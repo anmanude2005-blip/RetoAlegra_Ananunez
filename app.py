@@ -4,7 +4,7 @@ import pandas as pd
 import sqlite3
 
 
-from database import init_db
+from database import init_db, generate_document_code
 from products import  create_product, get_products
 from inventory import get_inventory, get_inventory_summary
 from reports import (
