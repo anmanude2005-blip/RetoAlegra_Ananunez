@@ -162,6 +162,7 @@ def init_db():
             product_id INTEGER NOT NULL,
             recipe_id INTEGER NOT NULL,
             planned_quantity REAL NOT NULL,
+            estimated_unit_material_cost REAL NOT NULL DEFAULT 0,
             produced_quantity REAL NOT NULL DEFAULT 0,
             status TEXT NOT NULL DEFAULT 'Borrador',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
@@ -224,6 +225,20 @@ def init_db():
         cursor.execute("""
             ALTER TABLE purchase_requests
             ADD COLUMN demand_id INTEGER
+        """)
+        #--------------
+        # Agregar costo estimado por unidad a órdenes existentes
+    order_columns = [
+        row["name"]
+        for row in cursor.execute(
+            "PRAGMA table_info(production_orders)"
+        ).fetchall()
+    ]
+
+    if "estimated_unit_material_cost" not in order_columns:
+        cursor.execute("""
+            ALTER TABLE production_orders
+            ADD COLUMN estimated_unit_material_cost REAL NOT NULL DEFAULT 0
         """)
     #-------------------------
     # Carga de datos de demostración, solo si el catálogo está vacío
