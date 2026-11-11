@@ -403,10 +403,11 @@ elif modulo == "Demandas":
                     placeholder="Ej. Demanda de producción para cliente"
                 )
 
-                code = st.text_input(
-                    "Código de demanda",
-                    placeholder="Ej. DEM-002"
-                )
+                #Genera el codigo del documento de manera manual, pero se transfirió a automático
+                #code = st.text_input(
+                 #   "Código de demanda",
+                  #  placeholder="Ej. DEM-002"
+                #)
 
                 submitted = st.form_submit_button(
                     "Registrar demanda",
