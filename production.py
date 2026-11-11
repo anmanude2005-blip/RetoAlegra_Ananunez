@@ -2,8 +2,9 @@
 from database import get_connection
 
 
+#------------------------
 def create_production_order(code, product_id, quantity, demand_id=None):
-    """Crea una orden de producción en estado borrador."""
+    """Crea una orden y guarda el costo estimado de materiales."""
 
     if quantity <= 0:
         raise ValueError("La cantidad debe ser mayor que cero.")
@@ -23,16 +24,41 @@ def create_production_order(code, product_id, quantity, demand_id=None):
         if not recipe:
             raise ValueError("El producto no tiene una receta activa.")
 
+        # Calcular el costo estimado de materiales por unidad
+        estimated_cost = cursor.execute("""
+            SELECT COALESCE(SUM(rd.quantity * p.unit_cost), 0)
+                AS estimated_unit_material_cost
+            FROM recipe_details rd
+            JOIN products p ON p.id = rd.component_id
+            WHERE rd.recipe_id = ?
+        """, (recipe["id"],)).fetchone()
+
+        estimated_unit_cost = estimated_cost[
+            "estimated_unit_material_cost"
+        ]
+
+        # Crear la orden conservando la receta y el costo estimado
         cursor.execute("""
-            INSERT INTO production_orders
-            (code, demand_id, product_id, recipe_id, planned_quantity)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO production_orders (
+                code,
+                demand_id,
+                product_id,
+                recipe_id,
+                planned_quantity,
+                estimated_unit_material_cost
+            )
+            VALUES (?, ?, ?, ?, ?, ?)
         """, (
-            code, demand_id, product_id,
-            recipe["id"], quantity
+            code,
+            demand_id,
+            product_id,
+            recipe["id"],
+            quantity,
+            estimated_unit_cost
         ))
 
         order_id = cursor.lastrowid
+
         conn.commit()
         return order_id
 
@@ -42,7 +68,7 @@ def create_production_order(code, product_id, quantity, demand_id=None):
 
     finally:
         conn.close()
-
+#--------------------------
 
 def release_production_order(order_id):
     """
