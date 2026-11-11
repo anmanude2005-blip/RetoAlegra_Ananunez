@@ -910,6 +910,7 @@ elif modulo == "Inventario":
     col3.metric("Disponibles", summary["available_units"])
 
 
+
 # REPORTES
 elif modulo == "Reportes":
 
@@ -921,7 +922,7 @@ elif modulo == "Reportes":
     production = get_production_summary()
     purchases = get_purchase_summary()
 
-    # Valores generales
+    # VALORES GENERALES
     total_orders = production.get("total_orders") or 0
     draft_orders = production.get("draft_orders") or 0
     active_orders = production.get("active_orders") or 0
@@ -994,7 +995,7 @@ elif modulo == "Reportes":
 
     st.divider()
 
-       # CONSUMO DE MATERIALES
+    # CONSUMO DE MATERIALES
     st.subheader("Consumo de materiales")
 
     materials = get_material_consumption()
@@ -1018,8 +1019,9 @@ elif modulo == "Reportes":
 
         materials_display["Costo total (COP)"] = (
             materials_display["Costo total (COP)"].map(
-                lambda value: "$ " +
-                f"{value:,.0f}".replace(",", ".") + " COP"
+                lambda value: (
+                    "$ " + f"{value:,.0f}".replace(",", ".") + " COP"
+                )
             )
         )
 
@@ -1047,7 +1049,9 @@ elif modulo == "Reportes":
     else:
         st.info("Aún no hay consumos de materiales registrados.")
 
-        # COSTOS POR ORDEN
+    st.divider()
+
+    # COSTOS POR ORDEN
     st.subheader("Costos reales por orden de producción")
 
     costs = get_production_costs()
@@ -1064,6 +1068,7 @@ elif modulo == "Reportes":
             "material_cost": "Costo real de materiales (COP)"
         })
 
+        # COSTO REAL POR UNIDAD
         costs_df["Costo por unidad (COP)"] = costs_df.apply(
             lambda row: (
                 row["Costo real de materiales (COP)"] /
@@ -1108,52 +1113,6 @@ elif modulo == "Reportes":
         "No incluyen mano de obra ni costos indirectos."
     )
 
-    # Costo real por unidad producida
-    costs_df["Costo por unidad (COP)"] = costs_df.apply(
-        lambda row: (
-            row["Costo real de materiales (COP)"] /
-            row["Cantidad producida"]
-            if row["Cantidad producida"] > 0 else 0
-        ),
-        axis=1
-    )
-
-    costs_display = costs_df.copy()
-
-    for column in [
-        "Costo real de materiales (COP)",
-        "Costo por unidad (COP)"
-    ]:
-        costs_display[column] = costs_display[column].map(
-            lambda value: "$ " + f"{value:,.0f}".replace(",", ".") + " COP"
-        )
-
-    st.dataframe(
-        costs_display,
-        use_container_width=True,
-        hide_index=True
-    )
-
-    st.markdown("**Costo de materiales por orden**")
-
-    cost_chart = costs_df.set_index("Orden")[
-        ["Costo real de materiales (COP)"]
-    ]
-
-    st.bar_chart(cost_chart)
-
-else:
-    st.info("Aún no hay órdenes de producción registradas.")
-
-    else:
-        st.info("Aún no hay órdenes de producción registradas.")
-
-    st.caption(
-        "Los costos presentados corresponden a los materiales "
-        "consumidos y registrados en producción. "
-        "No incluyen mano de obra ni costos indirectos."
-    )
-
 
 # MÓDULOS PENDIENTES DE INTERFAZ
 else:
@@ -1165,4 +1124,3 @@ else:
         "a la estructura del proyecto. "
         "Estamos preparando sus formularios y operaciones."
     )
-
