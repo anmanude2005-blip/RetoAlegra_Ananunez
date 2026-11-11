@@ -476,6 +476,62 @@ elif modulo == "Demandas":
                         item["shortage"] for item in requirements
                     )
 
+                    #--------------------------
+                    # ANÁLISIS INTELIGENTE DE MATERIALES
+                    st.markdown("**Análisis con inteligencia artificial**")
+
+                    if st.button(
+                        "Analizar faltantes con IA",
+                        key=f"analisis_ia_{demand['id']}",
+                        use_container_width=True
+                    ):
+                        try:
+                            analysis_context = {
+                                "demand_code": demand["code"],
+                                "description": (
+                                    demand["description"] or ""
+                                ),
+                                "total_units_requested": (
+                                    demand["total_units"] or 0
+                                ),
+                                "materials": [
+                                    {
+                                        "code": item["code"],
+                                        "name": item["name"],
+                                        "required_quantity": (
+                                            item["required_quantity"]
+                                        ),
+                                        "physical_stock": (
+                                            item["physical_stock"]
+                                        ),
+                                        "shortage": item["shortage"]
+                                    }
+                                    for item in requirements
+                                ],
+                                "instructions": (
+                                    "Interpreta los faltantes según "
+                                    "los cálculos actuales de SYNTHEX. "
+                                    "No supongas compras pendientes "
+                                    "ni reservas que no estén incluidas."
+                                )
+                            }
+
+                            with st.spinner(
+                                "La inteligencia artificial está "
+                                "analizando los materiales..."
+                            ):
+                                ai_result = analyze_material_shortages(
+                                    analysis_context
+                                )
+
+                            st.markdown("### Resultado del análisis")
+                            st.markdown(ai_result)
+
+                        except Exception as error:
+                            st.error(
+                                f"No fue posible generar el análisis: {error}"
+                            )
+#-----------------------------------
                     if total_shortages > 0:
 
                         st.warning(
