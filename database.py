@@ -212,19 +212,19 @@ def init_db():
     """)
 
     #---------------
-    # Agregar demand_id a bases de datos existentes
-columns = [
-    row["name"]
-    for row in cursor.execute(
-        "PRAGMA table_info(purchase_requests)"
-    ).fetchall()
-]
+       # Agregar demand_id a bases de datos existentes
+    columns = [
+        row["name"]
+        for row in cursor.execute(
+            "PRAGMA table_info(purchase_requests)"
+        ).fetchall()
+    ]
 
-if "demand_id" not in columns:
-    cursor.execute("""
-        ALTER TABLE purchase_requests
-        ADD COLUMN demand_id INTEGER
-    """)
+    if "demand_id" not in columns:
+        cursor.execute("""
+            ALTER TABLE purchase_requests
+            ADD COLUMN demand_id INTEGER
+        """)
 
     #-------------------------
     # Carga de datos de demostración, solo si el catálogo está vacío
