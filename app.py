@@ -994,56 +994,58 @@ elif modulo == "Reportes":
 
     st.divider()
 
-    # CONSUMO DE MATERIALES
+       # CONSUMO DE MATERIALES
     st.subheader("Consumo de materiales")
 
     materials = get_material_consumption()
 
     if materials:
 
-    materials_df = pd.DataFrame(materials)
+        materials_df = pd.DataFrame(materials)
 
-    materials_df = materials_df.rename(columns={
-        "code": "Código",
-        "name": "Material",
-        "consumed_quantity": "Cantidad consumida",
-        "consumption_cost": "Costo total (COP)"
-    })
+        materials_df = materials_df.rename(columns={
+            "code": "Código",
+            "name": "Material",
+            "consumed_quantity": "Cantidad consumida",
+            "consumption_cost": "Costo total (COP)"
+        })
 
-    total_consumption_cost = materials_df[
-        "Costo total (COP)"
-    ].sum()
+        total_consumption_cost = materials_df[
+            "Costo total (COP)"
+        ].sum()
 
-    # Formato de presentación
-    materials_display = materials_df.copy()
+        materials_display = materials_df.copy()
 
-    materials_display["Costo total (COP)"] = (
-        materials_display["Costo total (COP)"]
-        .map(lambda value: "$ " + f"{value:,.0f}".replace(",", ".") + " COP")
-    )
+        materials_display["Costo total (COP)"] = (
+            materials_display["Costo total (COP)"].map(
+                lambda value: "$ " +
+                f"{value:,.0f}".replace(",", ".") + " COP"
+            )
+        )
 
-    st.dataframe(
-        materials_display,
-        use_container_width=True,
-        hide_index=True
-    )
+        st.dataframe(
+            materials_display,
+            use_container_width=True,
+            hide_index=True
+        )
 
-    st.markdown("**Materiales con mayor consumo**")
+        st.markdown("**Materiales con mayor consumo**")
 
-    consumption_chart = materials_df.set_index("Material")[
-        ["Cantidad consumida"]
-    ]
+        consumption_chart = materials_df.set_index("Material")[
+            ["Cantidad consumida"]
+        ]
 
-    st.bar_chart(consumption_chart)
+        st.bar_chart(consumption_chart)
 
-    st.metric(
-        "Costo total de materiales consumidos",
-        "$ " + f"{total_consumption_cost:,.0f}".replace(",", ".") + " COP"
-    )
+        st.metric(
+            "Costo total de materiales consumidos",
+            "$ " +
+            f"{total_consumption_cost:,.0f}".replace(",", ".") +
+            " COP"
+        )
 
-else:
-    st.info("Aún no hay consumos de materiales registrados.")
-
+    else:
+        st.info("Aún no hay consumos de materiales registrados.")
     # COSTOS POR ORDEN
     st.subheader("Costos reales por orden de producción")
 
