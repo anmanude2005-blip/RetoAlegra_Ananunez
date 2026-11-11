@@ -213,11 +213,11 @@ def init_db():
 
     #---------------
        # Agregar demand_id a bases de datos existentes
-    columns = [
-        row["name"]
-        for row in cursor.execute(
-            "PRAGMA table_info(purchase_requests)"
-        ).fetchall()
+       columns = [
+           row["name"]
+           for row in cursor.execute(
+               "PRAGMA table_info(purchase_requests)"
+           ).fetchall()
     ]
 
     if "demand_id" not in columns:
