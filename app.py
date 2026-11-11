@@ -414,25 +414,26 @@ elif modulo == "Demandas":
                     use_container_width=True
                 )
 
-                if submitted:
+#-----------------
+if submitted:
 
-                    if not code.strip():
-                        st.error("Debes ingresar un código de demanda.")
+    try:
+        code = generate_document_code("DEM", "demands")
 
-                    else:
-                        try:
-                            create_demand(
-                                code.strip().upper(),
-                                description.strip(),
-                                [(product_id, quantity)]
-                            )
+        create_demand(
+            code,
+            description.strip(),
+            [(product_id, quantity)]
+        )
 
-                            st.success("Demanda registrada correctamente.")
-                            st.rerun()
+        st.success(f"Demanda {code} registrada correctamente.")
+        st.rerun()
 
-                        except Exception as error:
-                            st.error(f"No fue posible registrar la demanda: {error}")
+    except Exception as error:
+        st.error(f"No fue posible registrar la demanda: {error}")
 
+
+#-----------------
     st.divider()
     st.subheader("Demandas registradas")
 
