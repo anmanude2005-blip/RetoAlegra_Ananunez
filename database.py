@@ -264,3 +264,44 @@ def init_db():
 
     conn.commit()
     conn.close()
+
+#-------------------
+
+def generate_document_code(prefix, table):
+    """
+    Genera el siguiente código consecutivo de un documento.
+    Ejemplo: DEM-001, DEM-002, DEM-003.
+    """
+
+    allowed_tables = {
+        "demands",
+        "purchase_requests",
+        "purchase_receipts",
+        "production_orders",
+        "production_advances"
+    }
+
+    if table not in allowed_tables:
+        raise ValueError("Tipo de documento no permitido.")
+
+    conn = get_connection()
+
+    try:
+        result = conn.execute(
+            f"""
+            SELECT MAX(
+                CAST(SUBSTR(code, ?) AS INTEGER)
+            )
+            FROM {table}
+            WHERE code LIKE ?
+            """,
+            (len(prefix) + 2, prefix + "-%")
+        ).fetchone()
+
+        last_number = result[0] or 0
+        next_number = last_number + 1
+
+        return f"{prefix}-{next_number:03d}"
+
+    finally:
+        conn.close()
