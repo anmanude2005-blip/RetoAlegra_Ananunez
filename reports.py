@@ -65,8 +65,9 @@ def get_material_consumption():
     return [dict(row) for row in rows]
 
 
+
 def get_production_costs():
-    """Calcula los costos reales registrados por orden."""
+    """Consulta costos estimados y reales por orden."""
 
     conn = get_connection()
 
@@ -76,6 +77,8 @@ def get_production_costs():
             p.name AS finished_product,
             po.planned_quantity,
             po.produced_quantity,
+            COALESCE(po.estimated_unit_material_cost, 0)
+                AS estimated_unit_material_cost,
             COALESCE(SUM(pc.quantity * pc.unit_cost), 0)
                 AS material_cost
         FROM production_orders po
@@ -84,8 +87,13 @@ def get_production_costs():
             ON pa.production_order_id = po.id
         LEFT JOIN production_consumptions pc
             ON pc.advance_id = pa.id
-        GROUP BY po.id, po.code, p.name,
-                 po.planned_quantity, po.produced_quantity
+        GROUP BY
+            po.id,
+            po.code,
+            p.name,
+            po.planned_quantity,
+            po.produced_quantity,
+            po.estimated_unit_material_cost
         ORDER BY po.id DESC
     """).fetchall()
 
