@@ -60,7 +60,10 @@ def analyze_material_shortages(analysis_context):
             model=MODEL_NAME,
             contents=prompt,
             config=types.GenerateContentConfig(
-                max_output_tokens=700
+                max_output_tokens=1200,
+                thinking_config=types.ThinkingConfig(
+                    thinking_level="low"
+                )
             )
         )
 
