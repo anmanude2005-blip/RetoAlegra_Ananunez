@@ -1001,42 +1001,48 @@ elif modulo == "Reportes":
 
     if materials:
 
-        materials_df = pd.DataFrame(materials)
+    materials_df = pd.DataFrame(materials)
 
-        materials_df = materials_df.rename(columns={
-            "code": "Código",
-            "name": "Material",
-            "consumed_quantity": "Cantidad consumida",
-            "consumption_cost": "Costo total (COP)"
-        })
+    materials_df = materials_df.rename(columns={
+        "code": "Código",
+        "name": "Material",
+        "consumed_quantity": "Cantidad consumida",
+        "consumption_cost": "Costo total (COP)"
+    })
 
-        st.dataframe(
-            materials_df,
-            use_container_width=True,
-            hide_index=True
-        )
+    total_consumption_cost = materials_df[
+        "Costo total (COP)"
+    ].sum()
 
-        st.markdown("**Materiales con mayor consumo**")
+    # Formato de presentación
+    materials_display = materials_df.copy()
 
-        consumption_chart = materials_df.set_index("Material")[
-            ["Cantidad consumida"]
-        ]
+    materials_display["Costo total (COP)"] = (
+        materials_display["Costo total (COP)"]
+        .map(lambda value: "$ " + f"{value:,.0f}".replace(",", ".") + " COP")
+    )
 
-        st.bar_chart(consumption_chart)
+    st.dataframe(
+        materials_display,
+        use_container_width=True,
+        hide_index=True
+    )
 
-        total_consumption_cost = materials_df[
-            "Costo total (COP)"
-        ].sum()
+    st.markdown("**Materiales con mayor consumo**")
 
-        st.metric(
-            "Costo total de materiales consumidos",
-            f"$ {total_consumption_cost:,.0f} COP"
-        )
+    consumption_chart = materials_df.set_index("Material")[
+        ["Cantidad consumida"]
+    ]
 
-    else:
-        st.info("Aún no hay consumos de materiales registrados.")
+    st.bar_chart(consumption_chart)
 
-    st.divider()
+    st.metric(
+        "Costo total de materiales consumidos",
+        "$ " + f"{total_consumption_cost:,.0f}".replace(",", ".") + " COP"
+    )
+
+else:
+    st.info("Aún no hay consumos de materiales registrados.")
 
     # COSTOS POR ORDEN
     st.subheader("Costos reales por orden de producción")
