@@ -1,7 +1,8 @@
 
 import json
-import streamlit as st
 import time
+import streamlit as st
+
 from google import genai
 from google.genai import types
 
@@ -35,67 +36,72 @@ def analyze_material_shortages(analysis_context):
 
     {context}
 
-    Tu tarea es:
+    Presenta el análisis en español con estas secciones:
 
-    1. Identificar los materiales que presentan faltantes.
-    2. Explicar cómo afectan la capacidad de producción.
-    3. Identificar qué materiales requieren atención prioritaria.
-    4. Recomendar acciones concretas para continuar la producción.
-    5. Explicar los resultados en lenguaje sencillo y profesional.
+    1. HALLAZGOS:
+       Identifica materiales requeridos, existencias y faltantes.
 
-    Reglas importantes:
+    2. IMPACTO EN PRODUCCIÓN:
+       Explica cómo afectan los faltantes a la fabricación.
 
+    3. RECOMENDACIONES:
+       Sugiere acciones concretas para resolver los faltantes.
+
+    Reglas:
     - Utiliza únicamente los datos proporcionados.
     - No inventes cantidades, costos ni existencias.
-    - Diferencia los requerimientos de materiales de las existencias.
-    - Si falta información, indícalo expresamente.
+    - No supongas compras o reservas no informadas.
     - No modifiques inventarios ni órdenes.
-    - Presenta el resultado en español.
-    - Organiza la respuesta con títulos y recomendaciones.
+    - Utiliza lenguaje claro y profesional.
     """
 
-    try:
-        client = genai.Client(api_key=api_key)
+    client = genai.Client(api_key=api_key)
 
-               response = None
+    response = None
 
-        for attempt in range(3):
-            try:
-                response = client.models.generate_content(
-                    model=MODEL_NAME,
-                    contents=prompt,
-                    config=types.GenerateContentConfig(
-                        max_output_tokens=1200,
-                        thinking_config=types.ThinkingConfig(
-                            thinking_level="low"
-                        )
-                    )
+    # Intentar hasta tres veces ante errores temporales
+    for attempt in range(3):
+
+        try:
+
+            response = client.models.generate_content(
+                model=MODEL_NAME,
+                contents=prompt,
+                config=types.GenerateContentConfig(
+                    max_output_tokens=1200
                 )
-                break
-
-            except Exception as error:
-                error_message = str(error).lower()
-
-                temporary_error = (
-                    "503" in error_message
-                    or "unavailable" in error_message
-                    or "high demand" in error_message
-                )
-
-                if temporary_error and attempt < 2:
-                    time.sleep(2 ** (attempt + 1))
-                    continue
-
-                raise
-
-        if not response.text:
-            raise RuntimeError(
-                "El modelo no devolvió una respuesta."
             )
 
-        return response.text.strip()
+            break
 
-    except Exception as error:
+        except Exception as error:
+
+            error_message = str(error).lower()
+
+            temporary_error = any(
+                term in error_message
+                for term in [
+                    "503",
+                    "unavailable",
+                    "high demand",
+                    "429",
+                    "resource_exhausted"
+                ]
+            )
+
+            if temporary_error and attempt < 2:
+
+                time.sleep(2 ** (attempt + 1))
+                continue
+
+            raise RuntimeError(
+                f"No fue posible generar el análisis: {error}"
+            ) from error
+
+    if response is None or not response.text:
         raise RuntimeError(
-            f"No fue posible generar el análisis: {error}"
-        ) from error
+            "Gemini no devolvió una respuesta. Intenta nuevamente."
+        )
+
+    return response.text.strip()
+
