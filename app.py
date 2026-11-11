@@ -22,7 +22,8 @@ from purchases import (
     create_purchase_request,
     get_purchase_requests,
     get_purchase_details,
-    receive_purchase
+    receive_purchase,
+    create_purchase_from_demand
 )
 from production import (
     create_production_order,
