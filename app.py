@@ -1046,22 +1046,67 @@ elif modulo == "Reportes":
 
     else:
         st.info("Aún no hay consumos de materiales registrados.")
-    # COSTOS POR ORDEN
+
+        # COSTOS POR ORDEN
     st.subheader("Costos reales por orden de producción")
 
     costs = get_production_costs()
 
-   if costs:
+    if costs:
 
-    costs_df = pd.DataFrame(costs)
+        costs_df = pd.DataFrame(costs)
 
-    costs_df = costs_df.rename(columns={
-        "order_code": "Orden",
-        "finished_product": "Producto terminado",
-        "planned_quantity": "Cantidad planeada",
-        "produced_quantity": "Cantidad producida",
-        "material_cost": "Costo real de materiales (COP)"
-    })
+        costs_df = costs_df.rename(columns={
+            "order_code": "Orden",
+            "finished_product": "Producto terminado",
+            "planned_quantity": "Cantidad planeada",
+            "produced_quantity": "Cantidad producida",
+            "material_cost": "Costo real de materiales (COP)"
+        })
+
+        costs_df["Costo por unidad (COP)"] = costs_df.apply(
+            lambda row: (
+                row["Costo real de materiales (COP)"] /
+                row["Cantidad producida"]
+                if row["Cantidad producida"] > 0 else 0
+            ),
+            axis=1
+        )
+
+        costs_display = costs_df.copy()
+
+        for column in [
+            "Costo real de materiales (COP)",
+            "Costo por unidad (COP)"
+        ]:
+            costs_display[column] = costs_display[column].map(
+                lambda value: (
+                    "$ " + f"{value:,.0f}".replace(",", ".") + " COP"
+                )
+            )
+
+        st.dataframe(
+            costs_display,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.markdown("**Costo de materiales por orden**")
+
+        cost_chart = costs_df.set_index("Orden")[
+            ["Costo real de materiales (COP)"]
+        ]
+
+        st.bar_chart(cost_chart)
+
+    else:
+        st.info("Aún no hay órdenes de producción registradas.")
+
+    st.caption(
+        "Los costos presentados corresponden a los materiales "
+        "consumidos y registrados en producción. "
+        "No incluyen mano de obra ni costos indirectos."
+    )
 
     # Costo real por unidad producida
     costs_df["Costo por unidad (COP)"] = costs_df.apply(
