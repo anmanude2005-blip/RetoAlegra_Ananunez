@@ -250,3 +250,128 @@ def get_purchase_details(purchase_id):
 
     conn.close()
     return [dict(row) for row in rows]
+#------------------
+
+def create_purchase_from_demand(demand_id, code):
+    """
+    Genera una solicitud de compra a partir de los faltantes
+    reales de una demanda.
+    """
+
+    conn = get_connection()
+
+    try:
+        cursor = conn.cursor()
+
+        # Consultar los componentes requeridos por la demanda
+        requirements = cursor.execute("""
+            SELECT
+                component.id AS product_id,
+                component.name,
+                component.unit_cost,
+                SUM(dd.quantity * rd.quantity) AS required_quantity,
+                COALESCE(sb.physical_stock, 0) AS physical_stock
+            FROM demand_details dd
+            JOIN recipes r
+                ON r.product_id = dd.product_id
+                AND r.active = 1
+            JOIN recipe_details rd
+                ON rd.recipe_id = r.id
+            JOIN products component
+                ON component.id = rd.component_id
+            LEFT JOIN stock_balances sb
+                ON sb.product_id = component.id
+            WHERE dd.demand_id = ?
+            GROUP BY component.id, component.name,
+                     component.unit_cost, sb.physical_stock
+        """, (demand_id,)).fetchall()
+
+        if not requirements:
+            raise ValueError(
+                "No se encontraron componentes para esta demanda."
+            )
+
+        purchase_items = []
+
+        for item in requirements:
+
+            # Material reservado para otras órdenes
+            reserved = cursor.execute("""
+                SELECT COALESCE(
+                    SUM(quantity - consumed_quantity), 0
+                )
+                FROM reservations
+                WHERE product_id = ?
+                AND status = 'Activa'
+            """, (item["product_id"],)).fetchone()[0]
+
+            # Compras pendientes de recibir
+            pending_purchase = cursor.execute("""
+                SELECT COALESCE(
+                    SUM(pd.quantity - COALESCE(received.total, 0)), 0
+                )
+                FROM purchase_details pd
+                JOIN purchase_requests pr
+                    ON pr.id = pd.purchase_id
+                LEFT JOIN (
+                    SELECT
+                        prd.product_id,
+                        pr.purchase_id,
+                        SUM(prd.quantity) AS total
+                    FROM purchase_receipt_details prd
+                    JOIN purchase_receipts pr
+                        ON pr.id = prd.receipt_id
+                    GROUP BY pr.purchase_id, prd.product_id
+                ) received
+                    ON received.purchase_id = pd.purchase_id
+                    AND received.product_id = pd.product_id
+                WHERE pd.product_id = ?
+                AND pr.status != 'Recibida'
+            """, (item["product_id"],)).fetchone()[0]
+
+            available = item["physical_stock"] - reserved
+
+            shortage = (
+                item["required_quantity"]
+                - available
+                - pending_purchase
+            )
+
+            if shortage > 0:
+                purchase_items.append((
+                    item["product_id"],
+                    shortage,
+                    item["unit_cost"]
+                ))
+
+        if not purchase_items:
+            raise ValueError(
+                "No hay faltantes pendientes de compra para esta demanda."
+            )
+
+        # Crear la solicitud relacionada con la demanda
+        cursor.execute("""
+            INSERT INTO purchase_requests (code, demand_id)
+            VALUES (?, ?)
+        """, (code, demand_id))
+
+        purchase_id = cursor.lastrowid
+
+        cursor.executemany("""
+            INSERT INTO purchase_details
+            (purchase_id, product_id, quantity, unit_cost)
+            VALUES (?, ?, ?, ?)
+        """, [
+            (purchase_id, product_id, quantity, unit_cost)
+            for product_id, quantity, unit_cost in purchase_items
+        ])
+
+        conn.commit()
+        return purchase_id
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
