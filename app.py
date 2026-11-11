@@ -360,6 +360,7 @@ elif modulo == "Recetas":
         st.info("Todavía no hay recetas registradas.")
 
 
+
 # DEMANDAS
 elif modulo == "Demandas":
 
@@ -404,37 +405,31 @@ elif modulo == "Demandas":
                     placeholder="Ej. Demanda de producción para cliente"
                 )
 
-                #Genera el codigo del documento de manera manual, pero se transfirió a automático
-                #code = st.text_input(
-                 #   "Código de demanda",
-                  #  placeholder="Ej. DEM-002"
-                #)
-
                 submitted = st.form_submit_button(
                     "Registrar demanda",
                     use_container_width=True
                 )
 
-#-----------------
-if submitted:
+            if submitted:
+                try:
+                    code = generate_document_code("DEM", "demands")
 
-    try:
-        code = generate_document_code("DEM", "demands")
+                    create_demand(
+                        code,
+                        description.strip(),
+                        [(product_id, quantity)]
+                    )
 
-        create_demand(
-            code,
-            description.strip(),
-            [(product_id, quantity)]
-        )
+                    st.success(
+                        f"Demanda {code} registrada correctamente."
+                    )
+                    st.rerun()
 
-        st.success(f"Demanda {code} registrada correctamente.")
-        st.rerun()
+                except Exception as error:
+                    st.error(
+                        f"No fue posible registrar la demanda: {error}"
+                    )
 
-    except Exception as error:
-        st.error(f"No fue posible registrar la demanda: {error}")
-
-
-#-----------------
     st.divider()
     st.subheader("Demandas registradas")
 
@@ -479,10 +474,41 @@ if submitted:
                     )
 
                     if total_shortages > 0:
+
                         st.warning(
                             f"Se identificaron {total_shortages:g} "
                             "unidades faltantes de materiales."
                         )
+
+                        if st.button(
+                            "Generar solicitud de compra",
+                            key=f'compra_{demand["id"]}'
+                        ):
+                            try:
+                                purchase_code = generate_document_code(
+                                    "OC",
+                                    "purchase_requests"
+                                )
+
+                                purchase_id = create_purchase_from_demand(
+                                    demand["id"],
+                                    purchase_code
+                                )
+
+                                st.success(
+                                    f"Solicitud {purchase_code} "
+                                    "generada correctamente."
+                                )
+                                st.rerun()
+
+                            except ValueError as error:
+                                st.info(str(error))
+
+                            except Exception as error:
+                                st.error(
+                                    f"No fue posible generar la compra: {error}"
+                                )
+
                     else:
                         st.success(
                             "Hay existencias físicas suficientes "
@@ -497,6 +523,7 @@ if submitted:
 
     else:
         st.info("Todavía no hay demandas registradas.")
+
 
 
 # COMPRAS
