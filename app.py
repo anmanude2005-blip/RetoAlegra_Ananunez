@@ -33,6 +33,7 @@ from production import (
     register_production_advance,
     get_production_orders
 )
+from ai_assistant import analyze_material_shortages
 
 # Configuración de la aplicación
 st.set_page_config(
