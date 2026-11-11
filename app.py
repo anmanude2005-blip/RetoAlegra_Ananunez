@@ -9,7 +9,9 @@ from products import  create_product, get_products
 from inventory import get_inventory, get_inventory_summary
 from reports import (
     get_production_summary,
-    get_purchase_summary
+    get_purchase_summary,
+    get_material_consumption,
+    get_production_costs
 )
 from recipes import (
     get_recipes,
@@ -912,17 +914,169 @@ elif modulo == "Inventario":
 elif modulo == "Reportes":
 
     st.title("Reportes de gestión")
+    st.caption(
+        "Indicadores de producción, compras, consumo de materiales y costos."
+    )
 
     production = get_production_summary()
     purchases = get_purchase_summary()
 
+    # Valores generales
+    total_orders = production.get("total_orders") or 0
+    draft_orders = production.get("draft_orders") or 0
+    active_orders = production.get("active_orders") or 0
+    completed_orders = production.get("completed_orders") or 0
+    planned_units = production.get("planned_units") or 0
+    produced_units = production.get("produced_units") or 0
+
+    pending_purchases = purchases.get("pending_requests") or 0
+    received_purchases = purchases.get("received_requests") or 0
+    total_purchases = purchases.get("total_requests") or 0
+
+    # INDICADORES PRINCIPALES
+    st.subheader("Resumen general")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric("Órdenes de producción", total_orders)
+    col2.metric("Unidades producidas", produced_units)
+    col3.metric("Órdenes completadas", completed_orders)
+    col4.metric("Compras pendientes", pending_purchases)
+
+    st.divider()
+
+    # PRODUCCIÓN
     st.subheader("Producción")
 
-    st.json(production)
+    col1, col2, col3 = st.columns(3)
 
+    col1.metric("Unidades planeadas", planned_units)
+    col2.metric("Unidades producidas", produced_units)
+    col3.metric(
+        "Unidades pendientes",
+        max(planned_units - produced_units, 0)
+    )
+
+    status_df = pd.DataFrame({
+        "Estado": ["Borrador", "En producción", "Completada"],
+        "Cantidad de órdenes": [
+            draft_orders,
+            active_orders,
+            completed_orders
+        ]
+    })
+
+    st.markdown("**Órdenes por estado**")
+    st.dataframe(
+        status_df,
+        use_container_width=True,
+        hide_index=True
+    )
+
+    production_chart = pd.DataFrame(
+        {"Unidades": [planned_units, produced_units]},
+        index=["Planeadas", "Producidas"]
+    )
+
+    st.markdown("**Cumplimiento de producción**")
+    st.bar_chart(production_chart)
+
+    st.divider()
+
+    # COMPRAS
     st.subheader("Compras")
 
-    st.json(purchases)
+    col1, col2, col3 = st.columns(3)
+
+    col1.metric("Solicitudes registradas", total_purchases)
+    col2.metric("Solicitudes pendientes", pending_purchases)
+    col3.metric("Solicitudes recibidas", received_purchases)
+
+    st.divider()
+
+    # CONSUMO DE MATERIALES
+    st.subheader("Consumo de materiales")
+
+    materials = get_material_consumption()
+
+    if materials:
+
+        materials_df = pd.DataFrame(materials)
+
+        materials_df = materials_df.rename(columns={
+            "code": "Código",
+            "name": "Material",
+            "consumed_quantity": "Cantidad consumida",
+            "consumption_cost": "Costo total (COP)"
+        })
+
+        st.dataframe(
+            materials_df,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.markdown("**Materiales con mayor consumo**")
+
+        consumption_chart = materials_df.set_index("Material")[
+            ["Cantidad consumida"]
+        ]
+
+        st.bar_chart(consumption_chart)
+
+        total_consumption_cost = materials_df[
+            "Costo total (COP)"
+        ].sum()
+
+        st.metric(
+            "Costo total de materiales consumidos",
+            f"$ {total_consumption_cost:,.0f} COP"
+        )
+
+    else:
+        st.info("Aún no hay consumos de materiales registrados.")
+
+    st.divider()
+
+    # COSTOS POR ORDEN
+    st.subheader("Costos reales por orden de producción")
+
+    costs = get_production_costs()
+
+    if costs:
+
+        costs_df = pd.DataFrame(costs)
+
+        costs_df = costs_df.rename(columns={
+            "order_code": "Orden",
+            "finished_product": "Producto terminado",
+            "planned_quantity": "Cantidad planeada",
+            "produced_quantity": "Cantidad producida",
+            "material_cost": "Costo real de materiales (COP)"
+        })
+
+        st.dataframe(
+            costs_df,
+            use_container_width=True,
+            hide_index=True
+        )
+
+        st.markdown("**Costo de materiales por orden**")
+
+        cost_chart = costs_df.set_index("Orden")[
+            ["Costo real de materiales (COP)"]
+        ]
+
+        st.bar_chart(cost_chart)
+
+    else:
+        st.info("Aún no hay órdenes de producción registradas.")
+
+    st.caption(
+        "Los costos presentados corresponden a los materiales "
+        "consumidos y registrados en producción. "
+        "No incluyen mano de obra ni costos indirectos."
+    )
 
 
 # MÓDULOS PENDIENTES DE INTERFAZ
