@@ -166,6 +166,7 @@ if modulo == "Inicio":
 
 
 
+
 # CATÁLOGO DE PRODUCTOS
 elif modulo == "Productos":
 
@@ -181,6 +182,7 @@ elif modulo == "Productos":
             with col1:
                 code = st.text_input("Código de referencia")
                 name = st.text_input("Nombre del producto")
+
                 product_type = st.selectbox(
                     "Tipo de producto",
                     ["Componente", "Terminado"]
@@ -191,11 +193,13 @@ elif modulo == "Productos":
                     "Unidad de medida",
                     ["Unidad", "Kilogramo", "Litro", "Metro", "Caja"]
                 )
+
                 unit_cost = st.number_input(
                     "Costo unitario (COP)",
                     min_value=0.0,
                     step=100.0
                 )
+
                 initial_stock = st.number_input(
                     "Existencia inicial",
                     min_value=0.0,
@@ -209,44 +213,63 @@ elif modulo == "Productos":
 
         if submitted:
 
-             try:
-                 code = generate_document_code(
-                     "OP",
-                     "production_orders"
-                 )
+            if not code.strip() or not name.strip():
+                st.error(
+                    "Debes ingresar el código y nombre del producto."
+                )
 
-                 create_production_order(
-                     code,
-                     product_id,
-                     quantity,
-                     demand_id if demand_id != 0 else None
-                 )
+            else:
+                try:
+                    create_product(
+                        code.strip().upper(),
+                        name.strip(),
+                        product_type,
+                        unit,
+                        unit_cost,
+                        initial_stock
+                    )
 
-                 st.success(
-                     f"Orden {code} creada en estado borrador."
-                 )
-                 st.rerun()
+                    st.success("Producto registrado correctamente.")
+                    st.rerun()
 
-             except Exception as error:
-                 st.error(
-                     f"No fue posible crear la orden: {error}"
-                 )
-                 
+                except Exception as error:
+                    st.error(
+                        f"No fue posible registrar el producto: {error}"
+                    )
+
     st.divider()
     st.subheader("Productos registrados")
 
     products = get_products()
 
     if products:
+
         df = pd.DataFrame(products)
+
+        df["created_at"] = df["created_at"].apply(
+            format_colombia_datetime
+        )
+
+        df = df.rename(columns={
+            "code": "Código",
+            "name": "Producto",
+            "product_type": "Tipo",
+            "unit": "Unidad",
+            "unit_cost": "Costo unitario",
+            "active": "Activo",
+            "physical_stock": "Existencia física",
+            "created_at": "Fecha de creación"
+        })
 
         st.dataframe(
             df,
             use_container_width=True,
             hide_index=True
         )
+
     else:
         st.info("Todavía no hay productos registrados.")
+
 
 # RECETAS DE FABRICACIÓN
 elif modulo == "Recetas":
