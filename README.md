@@ -67,7 +67,7 @@ RetoAlegra_Ananunez/
 │   ├── 08_diagrama_entidad_relacion.mmd
 │   ├── 09_hallazgos_validacion_y_backlog.md
 │   └── 10_guia_prueba_e2e_demanda_produccion_parcial.md
-│
+│   └── 11_guia_construccion_y_configuracion_synthex.md
 └── README.md
 ```
 
@@ -92,7 +92,7 @@ La carpeta `docs/` contiene la documentación del proyecto:
 - Diagramas de procesos y entidad-relación.
 - Hallazgos y resultados de validación.
 - Guía de prueba integral del flujo de demanda y producción parcial.
-- - Guía de construcción y configuración de SYNTHEX, con el paso a paso de los módulos y herramientas utilizados ([Guía](docs/11_guia_construccion_y_configuracion_synthex.md), [Diagrama PNG](docs/11_diagrama_construccion_synthex.png), [Diagrama editable](docs/11_diagrama_construccion_synthex.mmd)).
+- Guía de construcción y configuración de SYNTHEX, con el paso a paso de los módulos y herramientas utilizados ([Guía](docs/11_guia_construccion_y_configuracion_synthex.md), [Diagrama PNG](docs/11_diagrama_construccion_synthex.png), [Diagrama editable](docs/11_diagrama_construccion_synthex.mmd)).
     
 
 ## 7. Alcance de la entrega
