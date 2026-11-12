@@ -749,6 +749,7 @@ elif modulo == "Demandas":
 
 
 
+
 # COMPRAS
 elif modulo == "Compras":
 
@@ -769,11 +770,6 @@ elif modulo == "Compras":
 
         else:
             with st.form("form_compra"):
-
-                code = st.text_input(
-                    "Código de solicitud",
-                    placeholder="Ej. OC-002"
-                )
 
                 component_options = {
                     p["id"]: f'{p["code"]} - {p["name"]}'
@@ -804,23 +800,28 @@ elif modulo == "Compras":
                     use_container_width=True
                 )
 
-                if submitted:
+            if submitted:
 
-                    if not code.strip():
-                        st.error("Debes ingresar un código.")
+                try:
+                    purchase_code = generate_document_code(
+                        "OC",
+                        "purchase_requests"
+                    )
 
-                    else:
-                        try:
-                            create_purchase_request(
-                                code.strip().upper(),
-                                [(product_id, quantity, unit_cost)]
-                            )
+                    create_purchase_request(
+                        purchase_code,
+                        [(product_id, quantity, unit_cost)]
+                    )
 
-                            st.success("Solicitud creada correctamente.")
-                            st.rerun()
+                    st.success(
+                        f"Solicitud {purchase_code} creada correctamente."
+                    )
+                    st.rerun()
 
-                        except Exception as error:
-                            st.error(f"No fue posible crear la solicitud: {error}")
+                except Exception as error:
+                    st.error(
+                        f"No fue posible crear la solicitud: {error}"
+                    )
 
     st.divider()
     st.subheader("Solicitudes registradas")
@@ -838,6 +839,7 @@ elif modulo == "Compras":
                 details = get_purchase_details(purchase["id"])
 
                 if details:
+
                     st.dataframe(
                         pd.DataFrame(details),
                         use_container_width=True,
@@ -849,12 +851,6 @@ elif modulo == "Compras":
                     st.markdown("**Registrar recepción de materiales**")
 
                     with st.form(f'receipt_{purchase["id"]}'):
-
-                        receipt_code = st.text_input(
-                            "Código de recepción",
-                            placeholder="Ej. REC-002",
-                            key=f'receipt_code_{purchase["id"]}'
-                        )
 
                         receipt_items = []
 
@@ -878,7 +874,10 @@ elif modulo == "Compras":
                                     max_value=float(pending),
                                     value=float(pending),
                                     step=1.0,
-                                    key=f'received_{purchase["id"]}_{item["product_id"]}'
+                                    key=(
+                                        f'received_{purchase["id"]}_'
+                                        f'{item["product_id"]}'
+                                    )
                                 )
 
                                 receipt_items.append((
@@ -892,37 +891,47 @@ elif modulo == "Compras":
                             use_container_width=True
                         )
 
-                        if receive_submitted:
+                    if receive_submitted:
 
-                            valid_items = [
-                                item for item in receipt_items
-                                if item[1] > 0
-                            ]
+                        valid_items = [
+                            item for item in receipt_items
+                            if item[1] > 0
+                        ]
 
-                            if not receipt_code.strip():
-                                st.error("Debes ingresar un código de recepción.")
+                        if not valid_items:
 
-                            elif not valid_items:
-                                st.error("Ingresa al menos una cantidad recibida.")
+                            st.error(
+                                "Ingresa al menos una cantidad recibida."
+                            )
 
-                            else:
-                                try:
-                                    receive_purchase(
-                                        receipt_code.strip().upper(),
-                                        purchase["id"],
-                                        valid_items
-                                    )
+                        else:
 
-                                    st.success("Recepción registrada correctamente.")
-                                    st.rerun()
+                            try:
+                                receipt_code = generate_document_code(
+                                    "REC",
+                                    "purchase_receipts"
+                                )
 
-                                except Exception as error:
-                                    st.error(
-                                        f"No fue posible registrar la recepción: {error}"
-                                    )
+                                receive_purchase(
+                                    receipt_code,
+                                    purchase["id"],
+                                    valid_items
+                                )
+
+                                st.success(
+                                    f"Recepción {receipt_code} "
+                                    "registrada correctamente."
+                                )
+                                st.rerun()
+
+                            except Exception as error:
+                                st.error(
+                                    f"No fue posible registrar la recepción: {error}"
+                                )
 
     else:
         st.info("Todavía no hay solicitudes de compra.")
+
 
 # PRODUCCIÓN
 elif modulo == "Producción":
