@@ -92,6 +92,8 @@ La carpeta `docs/` contiene la documentación del proyecto:
 - Diagramas de procesos y entidad-relación.
 - Hallazgos y resultados de validación.
 - Guía de prueba integral del flujo de demanda y producción parcial.
+- - Guía de construcción y configuración de SYNTHEX, con el paso a paso de los módulos y herramientas utilizados ([Guía](docs/11_guia_construccion_y_configuracion_synthex.md), [Diagrama PNG](docs/11_diagrama_construccion_synthex.png), [Diagrama editable](docs/11_diagrama_construccion_synthex.mmd)).
+    
 
 ## 7. Alcance de la entrega
 
