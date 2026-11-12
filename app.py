@@ -859,6 +859,8 @@ elif modulo == "Demandas":
                         "code",
                         "name",
                         "required_quantity",
+                        "initial_stock",
+                        "received_quantity",
                         "consumed_quantity",
                         "physical_stock",
                         "shortage"
@@ -866,8 +868,10 @@ elif modulo == "Demandas":
                         "code": "Código",
                         "name": "Material",
                         "required_quantity": "Requerido",
+                        "initial_stock": "Stock inicial",
+                        "received_quantity": "Compra recibida",
                         "consumed_quantity": "Consumido",
-                        "physical_stock": "Existencia física",
+                        "physical_stock": "Stock actual",
                         "shortage": "Faltante"
                     })
 
