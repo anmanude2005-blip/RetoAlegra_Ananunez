@@ -1435,8 +1435,186 @@ elif modulo == "Inventario":
     col2.metric("Reservadas", summary["reserved_units"])
     col3.metric("Disponibles", summary["available_units"])
 
+    st.divider()
+    st.subheader("Historial y descarga de movimientos")
 
+    col_fecha1, col_fecha2 = st.columns(2)
 
+    with col_fecha1:
+        start_date = st.date_input(
+            "Fecha inicial",
+            value=date.today() - timedelta(days=30),
+            key="movement_start_date"
+        )
+
+    with col_fecha2:
+        end_date = st.date_input(
+            "Fecha final",
+            value=date.today(),
+            key="movement_end_date"
+        )
+
+    if start_date > end_date:
+        st.error(
+            "La fecha inicial no puede ser posterior a la fecha final."
+        )
+
+    else:
+        movements = get_inventory_movements(
+            start_date=start_date,
+            end_date=end_date
+        )
+
+        if movements:
+
+            movements_df = pd.DataFrame(movements)
+
+            # Resumen de entradas y salidas por producto
+            movements_summary = movements_df.pivot_table(
+                index=["code", "name", "product_type", "unit"],
+                columns="movement_type",
+                values="quantity",
+                aggfunc="sum",
+                fill_value=0
+            ).reset_index()
+
+            for movement_type in ["ENTRADA", "SALIDA"]:
+                if movement_type not in movements_summary.columns:
+                    movements_summary[movement_type] = 0
+
+            movements_summary["Balance neto"] = (
+                movements_summary["ENTRADA"]
+                - movements_summary["SALIDA"]
+            )
+
+            # Preparar detalle de movimientos
+            movements_df["Usuario"] = (
+                "No registrado en esta versión"
+            )
+
+            movements_df["created_at"] = (
+                movements_df["created_at"].apply(
+                    format_colombia_datetime
+                )
+            )
+
+            movements_display = movements_df.rename(
+                columns={
+                    "created_at": "Fecha y hora",
+                    "code": "Código",
+                    "name": "Producto",
+                    "product_type": "Tipo de producto",
+                    "unit": "Unidad",
+                    "movement_type": "Tipo de movimiento",
+                    "quantity": "Cantidad",
+                    "reference": "Documento de referencia",
+                    "unit_cost": "Costo unitario (COP)",
+                    "movement_value": "Valor del movimiento (COP)"
+                }
+            )
+
+            movements_display = movements_display[[
+                "Fecha y hora",
+                "Documento de referencia",
+                "Código",
+                "Producto",
+                "Tipo de producto",
+                "Tipo de movimiento",
+                "Cantidad",
+                "Unidad",
+                "Costo unitario (COP)",
+                "Valor del movimiento (COP)",
+                "Usuario"
+            ]]
+
+            st.dataframe(
+                movements_display,
+                use_container_width=True,
+                hide_index=True
+            )
+
+            # Preparar resumen por producto
+            summary_display = movements_summary.rename(
+                columns={
+                    "code": "Código",
+                    "name": "Producto",
+                    "product_type": "Tipo de producto",
+                    "unit": "Unidad",
+                    "ENTRADA": "Total entradas",
+                    "SALIDA": "Total salidas"
+                }
+            )
+
+            summary_display = summary_display[[
+                "Código",
+                "Producto",
+                "Tipo de producto",
+                "Unidad",
+                "Total entradas",
+                "Total salidas",
+                "Balance neto"
+            ]]
+
+            # Crear archivo Excel
+            excel_buffer = BytesIO()
+
+            with pd.ExcelWriter(
+                excel_buffer,
+                engine="openpyxl"
+            ) as writer:
+
+                movements_display.to_excel(
+                    writer,
+                    sheet_name="Detalle movimientos",
+                    index=False
+                )
+
+                summary_display.to_excel(
+                    writer,
+                    sheet_name="Resumen por producto",
+                    index=False
+                )
+
+                # Ajustar presentación de las hojas
+                for worksheet in writer.sheets.values():
+
+                    worksheet.freeze_panes = "A2"
+                    worksheet.auto_filter.ref = worksheet.dimensions
+
+                    for column_cells in worksheet.columns:
+
+                        max_length = max(
+                            len(str(cell.value or ""))
+                            for cell in column_cells
+                        )
+
+                        worksheet.column_dimensions[
+                            column_cells[0].column_letter
+                        ].width = min(max_length + 2, 35)
+
+            st.download_button(
+                label="Descargar movimientos en Excel",
+                data=excel_buffer.getvalue(),
+                file_name=(
+                    f"SYNTHEX_movimientos_{start_date:%Y%m%d}_"
+                    f"{end_date:%Y%m%d}.xlsx"
+                ),
+                mime=(
+                    "application/vnd.openxmlformats-officedocument."
+                    "spreadsheetml.sheet"
+                )
+            )
+
+            st.caption(
+                f"Se encontraron {len(movements_display)} movimientos "
+                f"entre {start_date:%d/%m/%Y} "
+                f"y {end_date:%d/%m/%Y}."
+            )
+
+        else:
+            st.info(
+                "No hay movimientos registrados en el rango seleccionado."
+            )
 # REPORTES
 elif modulo == "Reportes":
 
