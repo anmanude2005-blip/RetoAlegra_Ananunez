@@ -403,3 +403,31 @@ def get_purchase_receipts(purchase_id):
 
     finally:
         conn.close()
+
+
+def get_purchase_receipts(purchase_id):
+    """Consulta el historial de recepciones de una solicitud."""
+
+    conn = get_connection()
+
+    try:
+        rows = conn.execute("""
+            SELECT
+                pr.id,
+                pr.code,
+                pr.purchase_id,
+                pr.received_at,
+                COUNT(prd.id) AS product_lines,
+                COALESCE(SUM(prd.quantity), 0) AS received_units
+            FROM purchase_receipts pr
+            LEFT JOIN purchase_receipt_details prd
+                ON prd.receipt_id = pr.id
+            WHERE pr.purchase_id = ?
+            GROUP BY pr.id
+            ORDER BY pr.id ASC
+        """, (purchase_id,)).fetchall()
+
+        return [dict(row) for row in rows]
+
+    finally:
+        conn.close()
