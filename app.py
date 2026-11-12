@@ -31,7 +31,8 @@ from production import (
     create_production_order,
     release_production_order,
     register_production_advance,
-    get_production_orders
+    get_production_orders,
+    cancel_production_order
 )
 from ai_assistant import analyze_material_shortages
 
