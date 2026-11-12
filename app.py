@@ -1780,17 +1780,45 @@ elif modulo == "Reportes":
     received_purchases = purchases.get("received_requests") or 0
     total_purchases = purchases.get("total_requests") or 0
 
-    # INDICADORES PRINCIPALES
-    st.subheader("Resumen general")
+  # INDICADORES PRINCIPALES
+st.subheader("Resumen general")
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+col1, col2, col3, col4, col5 = st.columns(5)
 
-    col1.metric("Órdenes de producción", total_orders)
-    col2.metric("Unidades producidas", produced_units)
-    col3.metric("Órdenes completadas", completed_orders)
-    col4.metric("Compras pendientes", pending_purchases)
-    col5.metric("Órdenes anuladas", cancelled_orders)
+with col1:
+    with st.container(border=True):
+        st.metric(
+            "Órdenes registradas",
+            total_orders
+        )
 
+with col2:
+    with st.container(border=True):
+        st.metric(
+            "Unidades producidas",
+            produced_units
+        )
+
+with col3:
+    with st.container(border=True):
+        st.metric(
+            "Órdenes completadas",
+            completed_orders
+        )
+
+with col4:
+    with st.container(border=True):
+        st.metric(
+            "Compras pendientes",
+            pending_purchases
+        )
+
+with col5:
+    with st.container(border=True):
+        st.metric(
+            "Órdenes anuladas",
+            cancelled_orders
+        )
     st.divider()
 
     # PRODUCCIÓN
