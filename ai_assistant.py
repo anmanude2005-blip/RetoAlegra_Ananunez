@@ -7,7 +7,7 @@ from google import genai
 from google.genai import types
 
 
-MODEL_NAME = "gemini-3.8-flash"
+MODEL_NAME = "gemini-3.5-flash-lite"
 
 
 def analyze_material_shortages(analysis_context):
