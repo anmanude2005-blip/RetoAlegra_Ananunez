@@ -1636,6 +1636,7 @@ elif modulo == "Reportes":
     draft_orders = production.get("draft_orders") or 0
     active_orders = production.get("active_orders") or 0
     completed_orders = production.get("completed_orders") or 0
+    cancelled_orders = production.get("cancelled_orders") or 0
     planned_units = production.get("planned_units") or 0
     produced_units = production.get("produced_units") or 0
 
@@ -1646,12 +1647,13 @@ elif modulo == "Reportes":
     # INDICADORES PRINCIPALES
     st.subheader("Resumen general")
 
-    col1, col2, col3, col4 = st.columns(4)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
     col1.metric("Órdenes de producción", total_orders)
     col2.metric("Unidades producidas", produced_units)
     col3.metric("Órdenes completadas", completed_orders)
     col4.metric("Compras pendientes", pending_purchases)
+    col5.metric("Órdenes anuladas", cancelled_orders)
 
     st.divider()
 
@@ -1664,17 +1666,23 @@ elif modulo == "Reportes":
     col2.metric("Unidades producidas", produced_units)
     col3.metric(
         "Unidades pendientes",
-        max(planned_units - produced_units, 0)
+        production.get("pending_units") or 0
     )
 
     status_df = pd.DataFrame({
-        "Estado": ["Borrador", "En producción", "Completada"],
-        "Cantidad de órdenes": [
-            draft_orders,
-            active_orders,
-            completed_orders
-        ]
-    })
+    "Estado": [
+        "Borrador",
+        "En producción",
+        "Completada",
+        "Anulada"
+    ],
+    "Cantidad de órdenes": [
+        draft_orders,
+        active_orders,
+        completed_orders,
+        cancelled_orders
+    ]
+})
 
     st.markdown("**Órdenes por estado**")
     st.dataframe(
