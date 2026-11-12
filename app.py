@@ -39,6 +39,7 @@ from purchases import (
     get_purchase_details,
     receive_purchase,
     create_purchase_from_demand,
+    get_demand_purchase_requests,
     get_purchase_receipts
 )
 from production import (
@@ -665,7 +666,7 @@ elif modulo == "Demandas":
 
                 st.markdown("### Seguimiento de producción")
 
-                col1, col2, col3, col4 = st.columns(4)
+                col1, col2, col3, col4, col5 = st.columns(5)
 
                 col1.metric(
                     "Solicitadas",
@@ -687,9 +688,9 @@ elif modulo == "Demandas":
                     summary["pending_to_produce"]
                 )
 
-                st.caption(
-                    f'Pendientes por programar: '
-                    f'{summary["pending_to_schedule"]}'
+                col5.metric(
+                    "Pendientes por programar",
+                    summary["pending_to_schedule"]
                 )
 
                 if summary["requested_units"] > 0:
