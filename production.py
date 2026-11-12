@@ -1,5 +1,6 @@
 
 from database import get_connection
+from math import floor
 
 
 #------------------------
@@ -120,7 +121,100 @@ def create_production_order(code, product_id, quantity, demand_id=None):
         conn.close()
 
 #--------------------------
+def get_max_producible_quantity(product_id, pending_quantity):
+    """
+    Calcula cuántas unidades adicionales pueden fabricarse
+    con el inventario disponible, respetando reservas y
+    órdenes existentes en borrador.
+    """
 
+    if pending_quantity <= 0:
+        return 0
+
+    conn = get_connection()
+
+    try:
+        cursor = conn.cursor()
+
+        recipe = cursor.execute("""
+            SELECT id
+            FROM recipes
+            WHERE product_id = ?
+              AND active = 1
+            ORDER BY version DESC
+            LIMIT 1
+        """, (product_id,)).fetchone()
+
+        if not recipe:
+            return 0
+
+        components = cursor.execute("""
+            SELECT
+                rd.component_id,
+                rd.quantity AS quantity_per_unit,
+
+                COALESCE(sb.physical_stock, 0)
+                    AS physical_stock,
+
+                COALESCE((
+                    SELECT SUM(r.quantity - r.consumed_quantity)
+                    FROM reservations r
+                    WHERE r.product_id = rd.component_id
+                    AND r.status = 'Activa'
+                ), 0) AS reserved_quantity,
+
+                COALESCE((
+                    SELECT SUM(
+                        rd_other.quantity * po_other.planned_quantity
+                    )
+                    FROM production_orders po_other
+                    JOIN recipe_details rd_other
+                        ON rd_other.recipe_id = po_other.recipe_id
+                    WHERE rd_other.component_id = rd.component_id
+                    AND po_other.status = 'Borrador'
+                ), 0) AS draft_committed
+
+            FROM recipe_details rd
+
+            LEFT JOIN stock_balances sb
+                ON sb.product_id = rd.component_id
+
+            WHERE rd.recipe_id = ?
+        """, (recipe["id"],)).fetchall()
+
+        if not components:
+            return 0
+
+        max_quantity = floor(pending_quantity)
+
+        for component in components:
+
+            available = (
+                component["physical_stock"]
+                - component["reserved_quantity"]
+                - component["draft_committed"]
+            )
+
+            quantity_per_unit = component["quantity_per_unit"]
+
+            if quantity_per_unit <= 0:
+                return 0
+
+            possible_units = floor(
+                max(available, 0) / quantity_per_unit
+            )
+
+            max_quantity = min(
+                max_quantity,
+                possible_units
+            )
+
+        return max(max_quantity, 0)
+
+    finally:
+        conn.close()
+        
+#---------------------------
 def release_production_order(order_id):
     """
     Libera una orden y reserva los componentes necesarios.
