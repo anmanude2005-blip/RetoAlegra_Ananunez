@@ -19,7 +19,13 @@ from recipes import (
     calculate_recipe_cost,
     create_recipe
 )
-from demands import create_demand, get_demands, get_demand_requirements
+from demands import (
+    create_demand,
+    get_demands,
+    get_demand_requirements,
+    get_demand_production_summary,
+    get_demand_orders
+)
 from purchases import (
     create_purchase_request,
     get_purchase_requests,
