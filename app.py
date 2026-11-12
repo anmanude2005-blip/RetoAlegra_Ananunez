@@ -1090,50 +1090,12 @@ elif modulo == "Producción":
                                 f"No fue posible liberar la orden: {error}"
                             )
 
+
                 elif order["status"] == "En producción":
 
                     st.markdown("**Registrar avance de fabricación**")
 
                     with st.form(f'avance_{order["id"]}'):
-
-                        # codigo para ingreso manual de documentación, pasado a automatico 
-                        #advance_code = st.text_input(
-                         #   "Código del avance",
-                          #  placeholder="Ej. ADV-001",
-                           # key=f'advance_code_{order["id"]}'
-                        #)
-                                                if advance_submitted:
-
-                            if advance_quantity <= 0:
-
-                                st.error(
-                                    "La cantidad debe ser mayor que cero."
-                                )
-
-                            else:
-                                try:
-                                    advance_code = generate_document_code(
-                                        "ADV",
-                                        "production_advances"
-                                    )
-
-                                    register_production_advance(
-                                        advance_code,
-                                        order["id"],
-                                        advance_quantity,
-                                        notes
-                                    )
-
-                                    st.success(
-                                        f"Avance {advance_code} "
-                                        "registrado correctamente."
-                                    )
-                                    st.rerun()
-
-                                except Exception as error:
-                                    st.error(
-                                        f"No fue posible registrar el avance: {error}"
-                                    )
 
                         advance_quantity = st.number_input(
                             "Unidades fabricadas en este avance",
@@ -1154,28 +1116,41 @@ elif modulo == "Producción":
                             use_container_width=True
                         )
 
-                        if advance_submitted:
+                    if advance_submitted:
 
-                            if not advance_code.strip():
-                                st.error("Debes ingresar un código para el avance.")
+                        if advance_quantity <= 0:
 
-                            elif advance_quantity <= 0:
-                                st.error("La cantidad debe ser mayor que cero.")
+                            st.error(
+                                "La cantidad debe ser mayor que cero."
+                            )
 
-                            else:
-                                try:
-                                    register_production_advance(
-                                        advance_code.strip().upper(),
-                                        order["id"],
-                                        advance_quantity,
-                                        notes
-                                    )
+                        else:
 
-                                    st.success("Avance de producción registrado.")
-                                    st.rerun()
+                            try:
+                                advance_code = generate_document_code(
+                                    "ADV",
+                                    "production_advances"
+                                )
 
-                                except Exception as error:
-                                    st.error(f"No fue posible registrar el avance: {error}")
+                                register_production_advance(
+                                    advance_code,
+                                    order["id"],
+                                    advance_quantity,
+                                    notes
+                                )
+
+                                st.success(
+                                    f"Avance {advance_code} "
+                                    "registrado correctamente."
+                                )
+
+                                st.rerun()
+
+                            except Exception as error:
+
+                                st.error(
+                                    f"No fue posible registrar el avance: {error}"
+                                )
 
                 elif order["status"] == "Completada":
                     st.success("Esta orden ya fue completada.")
