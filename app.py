@@ -906,6 +906,9 @@ elif modulo == "Demandas":
                                         "required_quantity": (
                                             item["required_quantity"]
                                         ),
+                                        "consumed_quantity": (
+                                            item["consumed_quantity"]
+                                        ),
                                         "physical_stock": (
                                             item["physical_stock"]
                                         ),
@@ -916,8 +919,10 @@ elif modulo == "Demandas":
                                 "instructions": (
                                     "Interpreta los faltantes según "
                                     "los cálculos actuales de SYNTHEX. "
-                                    "No supongas compras pendientes "
-                                    "ni reservas que no estén incluidas."
+                                    "Ten en cuenta los materiales "
+                                    "consumidos por la demanda. "
+                                    "No confundas consumo histórico "
+                                    "con faltantes pendientes de compra."
                                 )
                             }
 
@@ -1067,8 +1072,8 @@ elif modulo == "Demandas":
                     else:
 
                         st.success(
-                            "Hay existencias físicas suficientes "
-                            "para atender los requerimientos."
+                            "No hay faltantes pendientes de materiales "
+                            "para esta demanda."
                         )
 # COMPRAS
 elif modulo == "Compras":
