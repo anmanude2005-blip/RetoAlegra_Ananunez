@@ -6,7 +6,11 @@ import sqlite3
 
 from database import init_db, generate_document_code
 from products import  create_product, get_products
-from inventory import get_inventory, get_inventory_summary
+from inventory import (
+    get_inventory,
+    get_inventory_summary,
+    get_inventory_movements
+)
 from reports import (
     get_production_summary,
     get_purchase_summary,
