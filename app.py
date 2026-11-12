@@ -1453,7 +1453,7 @@ elif modulo == "Inventario":
     with col_fecha2:
         end_date = st.date_input(
             "Fecha final",
-            value=date.today(),
+            value=today_colombia,
             key="movement_end_date"
         )
 
