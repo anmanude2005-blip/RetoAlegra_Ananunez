@@ -385,6 +385,11 @@ elif modulo == "Recetas":
                     f'Estado: {"Activa" if recipe["active"] else "Inactiva"}'
                 )
 
+                st.caption(
+                    f'Fecha de creación: '
+                    f'{format_colombia_datetime(recipe["created_at"])}'
+                )
+
     else:
         st.info("Todavía no hay recetas registradas.")
 
