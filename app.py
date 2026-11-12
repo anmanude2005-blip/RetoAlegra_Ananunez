@@ -132,6 +132,30 @@ if modulo == "Inicio":
         purchases["pending_requests"] or 0
     )
 
+        st.markdown("**Órdenes por estado**")
+
+    col1, col2, col3, col4 = st.columns(4)
+
+    col1.metric(
+        "En borrador",
+        production.get("draft_orders") or 0
+    )
+
+    col2.metric(
+        "En producción",
+        production.get("active_orders") or 0
+    )
+
+    col3.metric(
+        "Completadas",
+        production.get("completed_orders") or 0
+    )
+
+    col4.metric(
+        "Anuladas",
+        production.get("cancelled_orders") or 0
+    )
+
     st.divider()
 
     st.subheader("Inventario disponible")
