@@ -739,7 +739,8 @@ elif modulo == "Demandas":
                         "Esta demanda todavía no tiene órdenes asociadas."
                     )
 
-                # CREAR ÓRDENES DESDE LA DEMANDA
+                # CREAR ÓRDENES SEGÚN DISPONIBILIDAD
+
                 st.markdown("### Programar nueva orden de producción")
 
                 for item in summary["products"]:
@@ -753,64 +754,92 @@ elif modulo == "Demandas":
 
                     if pending_schedule > 0:
 
-                        with st.form(
-                            f'form_op_demanda_{demand["id"]}_{item["product_id"]}'
-                        ):
+                        max_producible = get_max_producible_quantity(
+                            item["product_id"],
+                            pending_schedule
+                        )
 
-                            st.caption(
-                                f'Cantidad pendiente por programar: '
-                                f'{pending_schedule:g} unidades.'
+                        if max_producible > 0:
+
+                            st.success(
+                                f"Puedes fabricar hasta "
+                                f"{max_producible} unidades con el "
+                                "inventario disponible."
                             )
 
-                            order_quantity = st.number_input(
-                                "Cantidad para esta orden",
-                                min_value=1,
-                                max_value=int(pending_schedule),
-                                value=int(pending_schedule),
-                                step=1,
-                                key=(
-                                    f'qty_op_{demand["id"]}_'
-                                    f'{item["product_id"]}'
+                            if max_producible < pending_schedule:
+                                st.caption(
+                                    f"Pendiente por programar: "
+                                    f"{pending_schedule:g} unidades. "
+                                    f"Las restantes quedarán pendientes "
+                                    "hasta recibir los materiales."
                                 )
+
+                            with st.form(
+                                f'form_op_demanda_{demand["id"]}_'
+                                f'{item["product_id"]}'
+                            ):
+
+                                order_quantity = st.number_input(
+                                    "Cantidad para esta orden",
+                                    min_value=1,
+                                    max_value=max_producible,
+                                    value=max_producible,
+                                    step=1,
+                                    key=(
+                                        f'qty_op_{demand["id"]}_'
+                                        f'{item["product_id"]}'
+                                    )
+                                )
+
+                                create_order = st.form_submit_button(
+                                    "Crear orden de producción",
+                                    use_container_width=True
+                                )
+
+                            if create_order:
+
+                                try:
+
+                                    order_code = generate_document_code(
+                                        "OP",
+                                        "production_orders"
+                                    )
+
+                                    create_production_order(
+                                        order_code,
+                                        item["product_id"],
+                                        order_quantity,
+                                        demand["id"]
+                                    )
+
+                                    st.success(
+                                        f"Orden {order_code} creada "
+                                        f"para {order_quantity} unidades."
+                                    )
+
+                                    st.rerun()
+
+                                except Exception as error:
+
+                                    st.error(
+                                        f"No fue posible crear la orden: "
+                                        f"{error}"
+                                    )
+
+                        else:
+
+                            st.warning(
+                                "No hay materiales suficientes para "
+                                "crear otra orden. Revisa las compras "
+                                "pendientes de recepción."
                             )
-
-                            create_order = st.form_submit_button(
-                                "Crear orden de producción",
-                                use_container_width=True
-                            )
-
-                        if create_order:
-
-                            try:
-
-                                order_code = generate_document_code(
-                                    "OP",
-                                    "production_orders"
-                                )
-
-                                create_production_order(
-                                    order_code,
-                                    item["product_id"],
-                                    order_quantity,
-                                    demand["id"]
-                                )
-
-                                st.success(
-                                    f"Orden {order_code} creada correctamente."
-                                )
-
-                                st.rerun()
-
-                            except Exception as error:
-
-                                st.error(
-                                    f"No fue posible crear la orden: {error}"
-                                )
 
                     else:
 
                         st.info(
-                            "Este producto ya tiene toda su cantidad programada."
+                            "Esta demanda ya tiene toda su cantidad "
+                            "programada."
                         )
 
                 st.divider()
