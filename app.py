@@ -1758,6 +1758,58 @@ elif modulo == "Inventario":
             st.info(
                 "No hay movimientos registrados en el rango seleccionado."
             )
+
+    # REPORTES
+elif modulo == "Reportes":
+
+    st.title("Reportes de gestión")
+    st.caption(
+        "Indicadores de producción, compras, consumo de materiales y costos."
+    )
+
+    production = get_production_summary()
+    purchases = get_purchase_summary()
+
+    # VALORES GENERALES
+    total_orders = production.get("total_orders") or 0
+    draft_orders = production.get("draft_orders") or 0
+    active_orders = production.get("active_orders") or 0
+    completed_orders = production.get("completed_orders") or 0
+    cancelled_orders = production.get("cancelled_orders") or 0
+    planned_units = production.get("planned_units") or 0
+    produced_units = production.get("produced_units") or 0
+
+    pending_purchases = purchases.get("pending_requests") or 0
+    received_purchases = purchases.get("received_requests") or 0
+    total_purchases = purchases.get("total_requests") or 0
+
+    # RESUMEN GENERAL
+    st.subheader("Resumen general")
+
+    col1, col2, col3, col4, col5 = st.columns(5)
+
+    with col1:
+        with st.container(border=True):
+            st.metric("Órdenes registradas", total_orders)
+
+    with col2:
+        with st.container(border=True):
+            st.metric("Unidades producidas", produced_units)
+
+    with col3:
+        with st.container(border=True):
+            st.metric("Órdenes completadas", completed_orders)
+
+    with col4:
+        with st.container(border=True):
+            st.metric("Compras pendientes", pending_purchases)
+
+    with col5:
+        with st.container(border=True):
+            st.metric("Órdenes anuladas", cancelled_orders)
+
+    st.divider()
+    
     # CUADRÍCULA 1: PRODUCCIÓN Y ÓRDENES POR ESTADO
 
     col_production, col_status = st.columns(
