@@ -167,6 +167,9 @@ cursor.execute("""
             produced_quantity REAL NOT NULL DEFAULT 0,
             status TEXT NOT NULL DEFAULT 'Borrador',
             created_at TEXT DEFAULT CURRENT_TIMESTAMP,
+            released_at TEXT,
+            completed_at TEXT,
+            cancelled_at TEXT,
             FOREIGN KEY (demand_id) REFERENCES demands(id),
             FOREIGN KEY (product_id) REFERENCES products(id),
             FOREIGN KEY (recipe_id) REFERENCES recipes(id)
