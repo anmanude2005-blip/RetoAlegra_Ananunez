@@ -9,6 +9,9 @@ font = "sans serif"
 borderColor = "#D9E2EC"
 dataframeHeaderBackgroundColor = "#E8EEF5"
 dataframeHeaderTextColor = "#17324D"
+baseFontSize = 18
+metricValueFontSize = "2.5rem"
+codeFontSize = "1rem"
 
 chartCategoricalColors = [
     "#17324D",
@@ -24,3 +27,11 @@ secondaryBackgroundColor = "#1E3A5F"
 textColor = "#FFFFFF"
 primaryColor = "#55C5B3"
 linkColor = "#C4F1E8"
+headingFontSizes = [
+    "1.6rem",
+    "1.4rem",
+    "1.2rem",
+    "1.1rem",
+    "1rem",
+    "0.95rem"
+]
