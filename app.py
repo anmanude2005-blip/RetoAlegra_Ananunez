@@ -1853,31 +1853,31 @@ elif modulo == "Reportes":
 
     st.markdown("**Órdenes por estado**")
 
-status_style = status_df.style.set_table_styles([
-    {
-        "selector": "th",
-        "props": [
-            ("background-color", "#183650"),
-            ("color", "#FFFFFF"),
-            ("font-weight", "bold"),
-            ("padding", "10px")
-        ]
-    },
-    {
-        "selector": "td",
-        "props": [
-            ("color", "#243447"),
-            ("padding", "9px"),
-            ("border-bottom", "1px solid #E6ECF2")
-        ]
-    }
-])
+    status_style = status_df.style.set_table_styles([
+        {
+            "selector": "th",
+            "props": [
+                ("background-color", "#183650"),
+                ("color", "#FFFFFF"),
+                ("font-weight", "bold"),
+                ("padding", "10px")
+            ]
+        },
+        {
+            "selector": "td",
+            "props": [
+                ("color", "#243447"),
+                ("padding", "9px"),
+                ("border-bottom", "1px solid #E6ECF2")
+            ]
+        }
+    ])
 
-st.dataframe(
-    status_style,
-    use_container_width=True,
-    hide_index=True
-)
+    st.dataframe(
+        status_style,
+        use_container_width=True,
+        hide_index=True
+    )
 
     # GRÁFICO DE PRODUCCIÓN
     production_chart = pd.DataFrame(
