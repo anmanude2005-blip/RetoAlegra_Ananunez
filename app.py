@@ -44,6 +44,8 @@ from production import (
 )
 from ai_assistant import analyze_material_shortages
 
+from date_utils import format_colombia_datetime
+
 # Configuración de la aplicación
 st.set_page_config(
     page_title="SYNTHEX | Gestión de fabricación",
@@ -471,6 +473,10 @@ elif modulo == "Demandas":
             ):
 
                 st.write(demand["description"] or "Sin descripción")
+st.caption(
+    f'Fecha de creación: '
+    f'{format_colombia_datetime(demand["created_at"])}'
+)
 
                 st.write(
                     f'Unidades solicitadas: {demand["total_units"] or 0}'
