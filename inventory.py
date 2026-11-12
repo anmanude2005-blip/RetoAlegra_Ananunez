@@ -1,6 +1,7 @@
 
 from database import get_connection
-
+from datetime import datetime, time, timedelta, timezone
+from zoneinfo import ZoneInfo
 
 def get_inventory():
     """Consulta existencias físicas, reservas y disponibilidad."""
@@ -46,8 +47,12 @@ def get_inventory():
     return inventory
 
 
-def get_inventory_movements(product_id=None):
-    """Consulta el historial de movimientos."""
+def get_inventory_movements(
+    product_id=None,
+    start_date=None,
+    end_date=None
+):
+    """Consulta movimientos de inventario con filtro de fechas."""
 
     conn = get_connection()
 
@@ -57,6 +62,8 @@ def get_inventory_movements(product_id=None):
             m.created_at,
             p.code,
             p.name,
+            p.product_type,
+            p.unit,
             m.movement_type,
             m.quantity,
             m.reference,
@@ -66,21 +73,50 @@ def get_inventory_movements(product_id=None):
         JOIN products p ON m.product_id = p.id
     """
 
+    conditions = []
+    parameters = []
+
+    colombia_tz = ZoneInfo("America/Bogota")
+
+    if start_date is not None:
+        start_datetime = datetime.combine(
+            start_date,
+            time.min,
+            tzinfo=colombia_tz
+        ).astimezone(timezone.utc)
+
+        conditions.append("m.created_at >= ?")
+        parameters.append(
+            start_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        )
+
+    if end_date is not None:
+        end_datetime = datetime.combine(
+            end_date + timedelta(days=1),
+            time.min,
+            tzinfo=colombia_tz
+        ).astimezone(timezone.utc)
+
+        conditions.append("m.created_at < ?")
+        parameters.append(
+            end_datetime.strftime("%Y-%m-%d %H:%M:%S")
+        )
+
     if product_id is not None:
-        query += " WHERE m.product_id = ?"
-        rows = conn.execute(
-            query + " ORDER BY m.id DESC",
-            (product_id,)
-        ).fetchall()
-    else:
-        rows = conn.execute(
-            query + " ORDER BY m.id DESC"
-        ).fetchall()
+        conditions.append("m.product_id = ?")
+        parameters.append(product_id)
 
-    conn.close()
-    return [dict(row) for row in rows]
+    if conditions:
+        query += " WHERE " + " AND ".join(conditions)
 
+    query += " ORDER BY m.created_at DESC, m.id DESC"
 
+    try:
+        rows = conn.execute(query, parameters).fetchall()
+        return [dict(row) for row in rows]
+
+    finally:
+        conn.close()
 def get_inventory_summary():
     """Calcula indicadores generales de inventario."""
 
