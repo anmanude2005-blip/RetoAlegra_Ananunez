@@ -19,19 +19,20 @@ def init_db():
     conn = get_connection()
     cursor = conn.cursor()
 
-   # 1. Catálogo de productos y componentes
-cursor.execute("""
-    CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        code TEXT UNIQUE NOT NULL,
-        name TEXT NOT NULL,
-        product_type TEXT NOT NULL,
-        unit TEXT NOT NULL DEFAULT 'Unidad',
-        unit_cost REAL NOT NULL DEFAULT 0,
-        active INTEGER NOT NULL DEFAULT 1,
-        created_at TEXT DEFAULT CURRENT_TIMESTAMP
-    )
-""")
+    # 1. Catálogo de productos y componentes
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS products (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            code TEXT UNIQUE NOT NULL,
+            name TEXT NOT NULL,
+            product_type TEXT NOT NULL,
+            unit TEXT NOT NULL DEFAULT 'Unidad',
+            unit_cost REAL NOT NULL DEFAULT 0,
+            active INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT DEFAULT CURRENT_TIMESTAMP
+        )
+    """)
+    
     # 2. Existencias físicas
     cursor.execute("""
         CREATE TABLE IF NOT EXISTS stock_balances (
