@@ -40,6 +40,7 @@ from purchases import (
     receive_purchase,
     create_purchase_from_demand,
     get_demand_purchase_requests,
+    get_demand_material_requirements,
     get_purchase_receipts
 )
 from production import (
@@ -846,7 +847,7 @@ elif modulo == "Demandas":
                 st.divider()
 
 
-                requirements = get_demand_requirements(demand["id"])
+                requirements = get_demand_material_requirements(demand["id"])
 
                 if requirements:
 
