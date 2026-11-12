@@ -1758,203 +1758,173 @@ elif modulo == "Inventario":
             st.info(
                 "No hay movimientos registrados en el rango seleccionado."
             )
-# REPORTES
-elif modulo == "Reportes":
+    # CUADRÍCULA 1: PRODUCCIÓN Y ÓRDENES POR ESTADO
 
-    st.title("Reportes de gestión")
-    st.caption(
-        "Indicadores de producción, compras, consumo de materiales y costos."
+    col_production, col_status = st.columns(
+        [1.1, 0.9],
+        gap="large"
     )
 
-    production = get_production_summary()
-    purchases = get_purchase_summary()
+    with col_production:
 
-    # VALORES GENERALES
-    total_orders = production.get("total_orders") or 0
-    draft_orders = production.get("draft_orders") or 0
-    active_orders = production.get("active_orders") or 0
-    completed_orders = production.get("completed_orders") or 0
-    cancelled_orders = production.get("cancelled_orders") or 0
-    planned_units = production.get("planned_units") or 0
-    produced_units = production.get("produced_units") or 0
+        st.subheader("Producción")
 
-    pending_purchases = purchases.get("pending_requests") or 0
-    received_purchases = purchases.get("received_requests") or 0
-    total_purchases = purchases.get("total_requests") or 0
+        col1, col2, col3 = st.columns(3)
 
-    # INDICADORES PRINCIPALES
-    st.subheader("Resumen general")
+        col1.metric("Programadas", planned_units)
+        col2.metric("Producidas", produced_units)
+        col3.metric(
+            "Pendientes",
+            production.get("pending_units") or 0
+        )
 
-    col1, col2, col3, col4, col5 = st.columns(5)
+        production_chart = pd.DataFrame(
+            {"Unidades": [planned_units, produced_units]},
+            index=["Planeadas", "Producidas"]
+        )
 
-    with col1:
-        with st.container(border=True):
-            st.metric("Órdenes registradas", total_orders)
+        st.markdown("**Cumplimiento de producción**")
 
-    with col2:
-        with st.container(border=True):
-            st.metric("Unidades producidas", produced_units)
+        st.bar_chart(
+            production_chart,
+            height=220
+        )
 
-    with col3:
-        with st.container(border=True):
-            st.metric("Órdenes completadas", completed_orders)
+    with col_status:
 
-    with col4:
-        with st.container(border=True):
-            st.metric("Compras pendientes", pending_purchases)
+        st.subheader("Órdenes por estado")
 
-    with col5:
-        with st.container(border=True):
-            st.metric("Órdenes anuladas", cancelled_orders)
-
-    st.divider()
-
-    # PRODUCCIÓN
-    st.subheader("Producción")
-
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        with st.container(border=True):
-            st.metric(
-                "Unidades programadas",
-                planned_units
-            )
-
-    with col2:
-        with st.container(border=True):
-            st.metric(
-                "Unidades producidas",
-                produced_units
-            )
-
-    with col3:
-        with st.container(border=True):
-            st.metric(
-                "Unidades pendientes",
-                production.get("pending_units") or 0
-            )
-
-    # ÓRDENES POR ESTADO
-    status_df = pd.DataFrame({
-        "Estado": [
-            "Borrador",
-            "En producción",
-            "Completada",
-            "Anulada"
-        ],
-        "Cantidad de órdenes": [
-            draft_orders,
-            active_orders,
-            completed_orders,
-            cancelled_orders
-        ]
-    })
-
-    st.markdown("**Órdenes por estado**")
-
-    status_style = status_df.style.hide(axis="index").set_table_styles([
-        {
-            "selector": "th",
-            "props": [
-                ("background-color", "#183650"),
-                ("color", "white"),
-                ("font-weight", "bold"),
-                ("padding", "12px"),
-                ("text-align", "left")
+        status_df = pd.DataFrame({
+            "Estado": [
+                "Borrador",
+                "En producción",
+                "Completada",
+                "Anulada"
+            ],
+            "Cantidad de órdenes": [
+                draft_orders,
+                active_orders,
+                completed_orders,
+                cancelled_orders
             ]
-        },
-        {
-            "selector": "td",
-            "props": [
-                ("color", "#243447"),
-                ("padding", "10px"),
-                ("border-bottom", "1px solid #E6ECF2")
-            ]
-        }
-    ]).set_table_attributes('style="width:100%;"')
-    
-    st.markdown(
-        status_style.to_html(),
-        unsafe_allow_html=True
-    )
-    
-    # GRÁFICO DE PRODUCCIÓN
-    production_chart = pd.DataFrame(
-        {"Unidades": [planned_units, produced_units]},
-        index=["Planeadas", "Producidas"]
-    )
-
-    st.markdown("**Cumplimiento de producción**")
-    st.bar_chart(production_chart)
-
-    st.divider()
-
-    
-    # COMPRAS
-    st.subheader("Compras")
-
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric("Solicitudes registradas", total_purchases)
-    col2.metric("Solicitudes pendientes", pending_purchases)
-    col3.metric("Solicitudes recibidas", received_purchases)
-
-    st.divider()
-
-    # CONSUMO DE MATERIALES
-    st.subheader("Consumo de materiales")
-
-    materials = get_material_consumption()
-
-    if materials:
-
-        materials_df = pd.DataFrame(materials)
-
-        materials_df = materials_df.rename(columns={
-            "code": "Código",
-            "name": "Material",
-            "consumed_quantity": "Cantidad consumida",
-            "consumption_cost": "Costo total (COP)"
         })
 
-        total_consumption_cost = materials_df[
-            "Costo total (COP)"
-        ].sum()
+        status_style = status_df.style.hide(
+            axis="index"
+        ).set_table_styles([
+            {
+                "selector": "th",
+                "props": [
+                    ("background-color", "#183650"),
+                    ("color", "white"),
+                    ("font-weight", "bold"),
+                    ("padding", "12px"),
+                    ("text-align", "left")
+                ]
+            },
+            {
+                "selector": "td",
+                "props": [
+                    ("color", "#243447"),
+                    ("padding", "10px"),
+                    ("border-bottom", "1px solid #E6ECF2")
+                ]
+            }
+        ])
 
-        materials_display = materials_df.copy()
+        st.markdown(
+            status_style.to_html(),
+            unsafe_allow_html=True
+        )
 
-        materials_display["Costo total (COP)"] = (
-            materials_display["Costo total (COP)"].map(
-                lambda value: (
-                    "$ " + f"{value:,.0f}".replace(",", ".") + " COP"
+    st.divider()
+
+    # CUADRÍCULA 2: COMPRAS Y CONSUMO DE MATERIALES
+
+    col_purchase, col_materials = st.columns(
+        [0.75, 1.25],
+        gap="large"
+    )
+
+    with col_purchase:
+
+        st.subheader("Compras")
+
+        with st.container(border=True):
+
+            st.metric(
+                "Solicitudes registradas",
+                total_purchases
+            )
+
+            st.metric(
+                "Solicitudes pendientes",
+                pending_purchases
+            )
+
+            st.metric(
+                "Solicitudes recibidas",
+                received_purchases
+            )
+
+    with col_materials:
+
+        st.subheader("Consumo de materiales")
+
+        materials = get_material_consumption()
+
+        if materials:
+
+            materials_df = pd.DataFrame(materials)
+
+            materials_df = materials_df.rename(columns={
+                "code": "Código",
+                "name": "Material",
+                "consumed_quantity": "Cantidad consumida",
+                "consumption_cost": "Costo total (COP)"
+            })
+
+            total_consumption_cost = materials_df[
+                "Costo total (COP)"
+            ].sum()
+
+            materials_display = materials_df.copy()
+
+            materials_display["Costo total (COP)"] = (
+                materials_display["Costo total (COP)"].map(
+                    lambda value: (
+                        "$ " + f"{value:,.0f}".replace(",", ".") + " COP"
+                    )
                 )
             )
-        )
 
-        st.dataframe(
-            materials_display,
-            use_container_width=True,
-            hide_index=True
-        )
+            st.dataframe(
+                materials_display,
+                use_container_width=True,
+                hide_index=True,
+                height=260
+            )
 
-        st.markdown("**Materiales con mayor consumo**")
+            st.metric(
+                "Costo total de materiales consumidos",
+                "$ " +
+                f"{total_consumption_cost:,.0f}".replace(",", ".") +
+                " COP"
+            )
 
-        consumption_chart = materials_df.set_index("Material")[
-            ["Cantidad consumida"]
-        ]
+            consumption_chart = materials_df.set_index("Material")[
+                ["Cantidad consumida"]
+            ]
 
-        st.bar_chart(consumption_chart)
+            with st.expander("Ver gráfico de consumo"):
 
-        st.metric(
-            "Costo total de materiales consumidos",
-            "$ " +
-            f"{total_consumption_cost:,.0f}".replace(",", ".") +
-            " COP"
-        )
+                st.bar_chart(
+                    consumption_chart,
+                    height=220
+                )
 
-    else:
-        st.info("Aún no hay consumos de materiales registrados.")
+        else:
+            st.info("Aún no hay consumos de materiales registrados.")
 
     st.divider()
 
