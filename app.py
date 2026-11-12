@@ -215,52 +215,52 @@ if modulo == "Inicio":
     production = get_production_summary()
     purchases = get_purchase_summary()
 
-    # INDICADORES GENERALES
-    col1, col2, col3, col4 = st.columns(4)
+# INDICADORES GENERALES
+col1, col2, col3, col4 = st.columns(4)
 
-    col1.metric(
-        "Referencias",
-        inventory["total_references"]
+col1.metric(
+    "Referencias",
+    inventory["total_references"]
+)
+
+col2.metric(
+    "Unidades físicas",
+    inventory["physical_units"]
+)
+
+col3.metric(
+    "Órdenes activas",
+    production["active_orders"] or 0
+)
+
+col4.metric(
+    "Compras pendientes",
+    purchases["pending_requests"] or 0
+)
+
+st.divider()
+
+# INVENTARIO DISPONIBLE
+st.subheader("Inventario disponible")
+
+stock = get_inventory()
+
+if stock:
+    df = pd.DataFrame(stock)
+
+    st.dataframe(
+        df[[
+            "code",
+            "name",
+            "physical_stock",
+            "reserved_stock",
+            "available_stock"
+        ]],
+        use_container_width=True,
+        hide_index=True
     )
-
-    col2.metric(
-        "Unidades físicas",
-        inventory["physical_units"]
-    )
-
-    col3.metric(
-        "Órdenes activas",
-        production["active_orders"] or 0
-    )
-
-    col4.metric(
-        "Compras pendientes",
-        purchases["pending_requests"] or 0
-    )
-
-    st.divider()
-
-    # INVENTARIO DISPONIBLE
-    st.subheader("Inventario disponible")
-
-    stock = get_inventory()
-
-    if stock:
-        df = pd.DataFrame(stock)
-
-        st.dataframe(
-            df[[
-                "code",
-                "name",
-                "physical_stock",
-                "reserved_stock",
-                "available_stock"
-            ]],
-            use_container_width=True,
-            hide_index=True
-        )
-    else:
-        st.info("No hay existencias registradas.")
+else:
+    st.info("No hay existencias registradas.")
 
     st.divider()
 
