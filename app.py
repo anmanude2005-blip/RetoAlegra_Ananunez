@@ -967,10 +967,11 @@ elif modulo == "Producción":
                     format_func=lambda x: product_options[x]
                 )
 
-                code = st.text_input(
-                    "Código de la orden",
-                    placeholder="Ej. OP-001"
-                )
+                # codigo para ingreso manual, se pasa a automatico 
+                #code = st.text_input(
+                 #   "Código de la orden",
+                  #  placeholder="Ej. OP-001"
+                #)
 
                 quantity = st.number_input(
                     "Cantidad planeada",
