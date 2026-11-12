@@ -1446,7 +1446,7 @@ elif modulo == "Inventario":
     with col_fecha1:
         start_date = st.date_input(
             "Fecha inicial",
-            value=date.today() - timedelta(days=30),
+            value=today_colombia - timedelta(days=30),
             key="movement_start_date"
         )
 
