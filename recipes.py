@@ -16,6 +16,7 @@ def get_recipes():
             r.version,
             r.name AS recipe_name,
             r.active
+            r.created_at
         FROM recipes r
         JOIN products p ON r.product_id = p.id
         ORDER BY p.name, r.version DESC
