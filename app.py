@@ -1939,7 +1939,7 @@ elif modulo == "Reportes":
                 received_purchases
             )
 
-    with col_materials:
+    with col_materials.container(key="synthex_materials_panel"):
 
         st.subheader("Consumo de materiales")
 
