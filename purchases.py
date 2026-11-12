@@ -90,6 +90,137 @@ def get_demand_purchase_requests(demand_id):
 
     finally:
         conn.close()
+
+#------------------
+
+def get_demand_material_requirements(demand_id):
+    """
+    Calcula los materiales de una demanda reconociendo
+    el consumo realizado por sus órdenes de producción.
+    """
+
+    conn = get_connection()
+
+    try:
+        cursor = conn.cursor()
+
+        requirements = cursor.execute("""
+            SELECT
+                component.id AS product_id,
+                component.code,
+                component.name,
+                component.unit_cost,
+                SUM(dd.quantity * rd.quantity) AS required_quantity,
+                COALESCE(sb.physical_stock, 0) AS physical_stock
+            FROM demand_details dd
+            JOIN recipes r
+                ON r.product_id = dd.product_id
+                AND r.active = 1
+            JOIN recipe_details rd
+                ON rd.recipe_id = r.id
+            JOIN products component
+                ON component.id = rd.component_id
+            LEFT JOIN stock_balances sb
+                ON sb.product_id = component.id
+            WHERE dd.demand_id = ?
+            GROUP BY
+                component.id,
+                component.code,
+                component.name,
+                component.unit_cost,
+                sb.physical_stock
+        """, (demand_id,)).fetchall()
+
+        results = []
+
+        for item in requirements:
+
+            # Material consumido por esta demanda
+            consumed = cursor.execute("""
+                SELECT COALESCE(SUM(pc.quantity), 0)
+                FROM production_consumptions pc
+                JOIN production_advances pa
+                    ON pa.id = pc.advance_id
+                JOIN production_orders po
+                    ON po.id = pa.production_order_id
+                WHERE po.demand_id = ?
+                AND pc.product_id = ?
+            """, (
+                demand_id,
+                item["product_id"]
+            )).fetchone()[0]
+
+            # Reservas de otras demandas
+            reserved_other = cursor.execute("""
+                SELECT COALESCE(
+                    SUM(r.quantity - r.consumed_quantity), 0
+                )
+                FROM reservations r
+                JOIN production_orders po
+                    ON po.id = r.production_order_id
+                WHERE r.product_id = ?
+                AND r.status = 'Activa'
+                AND (
+                    po.demand_id IS NULL
+                    OR po.demand_id != ?
+                )
+            """, (
+                item["product_id"],
+                demand_id
+            )).fetchone()[0]
+
+            # Material comprometido en borradores de otras demandas
+            draft_other = cursor.execute("""
+                SELECT COALESCE(
+                    SUM(rd.quantity * po.planned_quantity), 0
+                )
+                FROM production_orders po
+                JOIN recipe_details rd
+                    ON rd.recipe_id = po.recipe_id
+                WHERE rd.component_id = ?
+                AND po.status = 'Borrador'
+                AND (
+                    po.demand_id IS NULL
+                    OR po.demand_id != ?
+                )
+            """, (
+                item["product_id"],
+                demand_id
+            )).fetchone()[0]
+
+            remaining_required = max(
+                item["required_quantity"] - consumed,
+                0
+            )
+
+            available = max(
+                item["physical_stock"]
+                - reserved_other
+                - draft_other,
+                0
+            )
+
+            shortage = max(
+                remaining_required - available,
+                0
+            )
+
+            results.append({
+                "product_id": item["product_id"],
+                "code": item["code"],
+                "name": item["name"],
+                "unit_cost": item["unit_cost"],
+                "required_quantity": item["required_quantity"],
+                "physical_stock": item["physical_stock"],
+                "consumed_quantity": consumed,
+                "shortage": shortage
+            })
+
+        return results
+
+    finally:
+        conn.close()
+        
         
 #----------------------
 def receive_purchase(code, purchase_id, items):
