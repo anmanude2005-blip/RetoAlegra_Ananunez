@@ -185,30 +185,31 @@ elif modulo == "Productos":
                 use_container_width=True
             )
 
-                if submitted:
+        if submitted:
 
-                    try:
-                        code = generate_document_code(
-                            "OP",
-                            "production_orders"
-                        )
+             try:
+                 code = generate_document_code(
+                     "OP",
+                     "production_orders"
+                 )
 
-                        create_production_order(
-                            code,
-                            product_id,
-                            quantity,
-                            demand_id if demand_id != 0 else None
-                        )
+                 create_production_order(
+                     code,
+                     product_id,
+                     quantity,
+                     demand_id if demand_id != 0 else None
+                 )
 
-                        st.success(
-                            f"Orden {code} creada en estado borrador."
-                        )
-                        st.rerun()
+                 st.success(
+                     f"Orden {code} creada en estado borrador."
+                 )
+                 st.rerun()
 
-                    except Exception as error:
-                        st.error(
-                            f"No fue posible crear la orden: {error}"
-                        )
+             except Exception as error:
+                 st.error(
+                     f"No fue posible crear la orden: {error}"
+                 )
+                 
     st.divider()
     st.subheader("Productos registrados")
 
