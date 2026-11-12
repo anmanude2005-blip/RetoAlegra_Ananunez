@@ -865,6 +865,9 @@ elif modulo == "Producción":
                 col3.metric("Cantidad pendiente", order["pending_quantity"])
 
                 st.write(f'Producto: {order["product_code"]} - {order["product_name"]}')
+                                st.write(
+                    f'Demanda asociada: {order["demand_code"] or "Sin asociar"}'
+                )
 
                 
                 if order["status"] == "Borrador":
