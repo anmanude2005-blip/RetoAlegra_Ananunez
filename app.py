@@ -1044,6 +1044,109 @@ elif modulo == "Producción":
                 )
 
                 
+                # HISTORIAL DE AVANCES DE PRODUCCIÓN
+                st.markdown("### Historial de avances")
+
+                advances = get_production_advances(order["id"])
+
+                if advances:
+
+                    advances_df = pd.DataFrame(advances)
+
+                    advances_display = advances_df.rename(columns={
+                        "code": "Documento ADV",
+                        "created_at": "Fecha de registro",
+                        "produced_quantity": "Unidades fabricadas",
+                        "material_cost": "Costo de materiales (COP)",
+                        "notes": "Observaciones"
+                    })
+
+                    advances_display["Costo de materiales (COP)"] = (
+                        advances_display["Costo de materiales (COP)"].map(
+                            lambda value: (
+                                "$ " + f"{value:,.0f}".replace(",", ".") + " COP"
+                            )
+                        )
+                    )
+
+                    st.dataframe(
+                        advances_display[[
+                            "Documento ADV",
+                            "Fecha de registro",
+                            "Unidades fabricadas",
+                            "Costo de materiales (COP)",
+                            "Observaciones"
+                        ]],
+                        use_container_width=True,
+                        hide_index=True
+                    )
+
+                    # CONSULTAR DETALLE DE UN AVANCE
+                    advance_options = {
+                        advance["id"]: (
+                            f'{advance["code"]} | '
+                            f'{advance["produced_quantity"]:g} unidades'
+                        )
+                        for advance in advances
+                    }
+
+                    selected_advance_id = st.selectbox(
+                        "Consultar detalle de materiales consumidos",
+                        options=list(advance_options.keys()),
+                        format_func=lambda x: advance_options[x],
+                        key=f'advance_detail_{order["id"]}'
+                    )
+
+                    consumption = get_advance_consumptions(
+                        selected_advance_id
+                    )
+
+                    if consumption:
+
+                        consumption_df = pd.DataFrame(consumption)
+
+                        consumption_display = consumption_df.rename(
+                            columns={
+                                "code": "Código material",
+                                "name": "Material",
+                                "quantity": "Cantidad consumida",
+                                "unit_cost": "Costo unitario (COP)",
+                                "total_cost": "Costo total (COP)"
+                            }
+                        )
+
+                        for column in [
+                            "Costo unitario (COP)",
+                            "Costo total (COP)"
+                        ]:
+                            consumption_display[column] = (
+                                consumption_display[column].map(
+                                    lambda value: (
+                                        "$ " +
+                                        f"{value:,.0f}".replace(",", ".") +
+                                        " COP"
+                                    )
+                                )
+                            )
+
+                        st.dataframe(
+                            consumption_display,
+                            use_container_width=True,
+                            hide_index=True
+                        )
+
+                    else:
+                        st.info(
+                            "Este avance no tiene consumos de materiales registrados."
+                        )
+
+                else:
+                    st.info(
+                        "Esta orden todavía no tiene avances registrados."
+                    )
+
+
+                
                 if order["status"] == "Borrador":
 
                     st.warning(
