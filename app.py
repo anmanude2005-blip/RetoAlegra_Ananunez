@@ -411,7 +411,22 @@ elif modulo == "Recetas":
 
                 st.caption(
                     f'Fecha de creación: '
-                    f'{format_colombia_datetime(recipe["created_at"])}'
+                    f'{format_colombia_datetime(order["created_at"])}'
+                )
+                
+                st.caption(
+                    f'Fecha de liberación: '
+                    f'{format_colombia_datetime(order["released_at"])}'
+                )
+                
+                st.caption(
+                    f'Fecha de finalización: '
+                    f'{format_colombia_datetime(order["completed_at"])}'
+                )
+                
+                st.caption(
+                    f'Fecha de anulación: '
+                    f'{format_colombia_datetime(order["cancelled_at"])}'
                 )
 
     else:
