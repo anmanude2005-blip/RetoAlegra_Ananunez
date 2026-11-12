@@ -459,6 +459,163 @@ elif modulo == "Demandas":
                     f'Unidades solicitadas: {demand["total_units"] or 0}'
                 )
 
+                
+                # RESUMEN DE PRODUCCIÓN DE LA DEMANDA
+                summary = get_demand_production_summary(demand["id"])
+
+                st.markdown("### Seguimiento de producción")
+
+                col1, col2, col3, col4 = st.columns(4)
+
+                col1.metric(
+                    "Solicitadas",
+                    summary["requested_units"]
+                )
+
+                col2.metric(
+                    "Programadas",
+                    summary["planned_units"]
+                )
+
+                col3.metric(
+                    "Fabricadas",
+                    summary["produced_units"]
+                )
+
+                col4.metric(
+                    "Pendientes por fabricar",
+                    summary["pending_to_produce"]
+                )
+
+                st.caption(
+                    f'Pendientes por programar: '
+                    f'{summary["pending_to_schedule"]}'
+                )
+
+                if summary["requested_units"] > 0:
+
+                    progress = (
+                        summary["produced_units"] /
+                        summary["requested_units"]
+                    )
+
+                    st.progress(min(progress, 1.0))
+
+                # HISTORIAL DE ÓRDENES ASOCIADAS
+                st.markdown("### Órdenes de producción asociadas")
+
+                associated_orders = get_demand_orders(demand["id"])
+
+                if associated_orders:
+
+                    orders_df = pd.DataFrame(associated_orders)
+
+                    orders_display = orders_df.rename(columns={
+                        "code": "Orden",
+                        "product_code": "Código producto",
+                        "product_name": "Producto",
+                        "planned_quantity": "Cantidad planeada",
+                        "produced_quantity": "Fabricadas",
+                        "pending_quantity": "Pendientes",
+                        "status": "Estado"
+                    })
+
+                    st.dataframe(
+                        orders_display[[
+                            "Orden",
+                            "Código producto",
+                            "Producto",
+                            "Cantidad planeada",
+                            "Fabricadas",
+                            "Pendientes",
+                            "Estado"
+                        ]],
+                        use_container_width=True,
+                        hide_index=True
+                    )
+
+                else:
+                    st.info(
+                        "Esta demanda todavía no tiene órdenes asociadas."
+                    )
+
+                # CREAR ÓRDENES DESDE LA DEMANDA
+                st.markdown("### Programar nueva orden de producción")
+
+                for item in summary["products"]:
+
+                    pending_schedule = item["pending_to_schedule"]
+
+                    st.markdown(
+                        f'**{item["product_code"]} - '
+                        f'{item["product_name"]}**'
+                    )
+
+                    if pending_schedule > 0:
+
+                        with st.form(
+                            f'form_op_demanda_{demand["id"]}_{item["product_id"]}'
+                        ):
+
+                            st.caption(
+                                f'Cantidad pendiente por programar: '
+                                f'{pending_schedule:g} unidades.'
+                            )
+
+                            order_quantity = st.number_input(
+                                "Cantidad para esta orden",
+                                min_value=1,
+                                max_value=int(pending_schedule),
+                                value=int(pending_schedule),
+                                step=1,
+                                key=(
+                                    f'qty_op_{demand["id"]}_'
+                                    f'{item["product_id"]}'
+                                )
+                            )
+
+                            create_order = st.form_submit_button(
+                                "Crear orden de producción",
+                                use_container_width=True
+                            )
+
+                        if create_order:
+
+                            try:
+
+                                order_code = generate_document_code(
+                                    "OP",
+                                    "production_orders"
+                                )
+
+                                create_production_order(
+                                    order_code,
+                                    item["product_id"],
+                                    order_quantity,
+                                    demand["id"]
+                                )
+
+                                st.success(
+                                    f"Orden {order_code} creada correctamente."
+                                )
+
+                                st.rerun()
+
+                            except Exception as error:
+
+                                st.error(
+                                    f"No fue posible crear la orden: {error}"
+                                )
+
+                    else:
+
+                        st.info(
+                            "Este producto ya tiene toda su cantidad programada."
+                        )
+
+                st.divider()
+
+
                 requirements = get_demand_requirements(demand["id"])
 
                 if requirements:
