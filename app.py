@@ -31,7 +31,8 @@ from purchases import (
     get_purchase_requests,
     get_purchase_details,
     receive_purchase,
-    create_purchase_from_demand
+    create_purchase_from_demand,
+    get_purchase_receipts
 )
 from production import (
     create_production_order,
