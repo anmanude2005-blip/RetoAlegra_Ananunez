@@ -1782,45 +1782,31 @@ elif modulo == "Reportes":
     received_purchases = purchases.get("received_requests") or 0
     total_purchases = purchases.get("total_requests") or 0
 
-  # INDICADORES PRINCIPALES
-st.subheader("Resumen general")
+    # INDICADORES PRINCIPALES
+    st.subheader("Resumen general")
 
-col1, col2, col3, col4, col5 = st.columns(5)
+    col1, col2, col3, col4, col5 = st.columns(5)
 
-with col1:
-    with st.container(border=True):
-        st.metric(
-            "Órdenes registradas",
-            total_orders
-        )
+    with col1:
+        with st.container(border=True):
+            st.metric("Órdenes registradas", total_orders)
 
-with col2:
-    with st.container(border=True):
-        st.metric(
-            "Unidades producidas",
-            produced_units
-        )
+    with col2:
+        with st.container(border=True):
+            st.metric("Unidades producidas", produced_units)
 
-with col3:
-    with st.container(border=True):
-        st.metric(
-            "Órdenes completadas",
-            completed_orders
-        )
+    with col3:
+        with st.container(border=True):
+            st.metric("Órdenes completadas", completed_orders)
 
-with col4:
-    with st.container(border=True):
-        st.metric(
-            "Compras pendientes",
-            pending_purchases
-        )
+    with col4:
+        with st.container(border=True):
+            st.metric("Compras pendientes", pending_purchases)
 
-with col5:
-    with st.container(border=True):
-        st.metric(
-            "Órdenes anuladas",
-            cancelled_orders
-        )
+    with col5:
+        with st.container(border=True):
+            st.metric("Órdenes anuladas", cancelled_orders)
+
     st.divider()
 
     # PRODUCCIÓN
@@ -1836,21 +1822,22 @@ with col5:
     )
 
     status_df = pd.DataFrame({
-    "Estado": [
-        "Borrador",
-        "En producción",
-        "Completada",
-        "Anulada"
-    ],
-    "Cantidad de órdenes": [
-        draft_orders,
-        active_orders,
-        completed_orders,
-        cancelled_orders
-    ]
-})
+        "Estado": [
+            "Borrador",
+            "En producción",
+            "Completada",
+            "Anulada"
+        ],
+        "Cantidad de órdenes": [
+            draft_orders,
+            active_orders,
+            completed_orders,
+            cancelled_orders
+        ]
+    })
 
     st.markdown("**Órdenes por estado**")
+
     st.dataframe(
         status_df,
         use_container_width=True,
@@ -1939,7 +1926,6 @@ with col5:
 
     costs = get_production_costs()
 
-   
     if costs:
 
         costs_df = pd.DataFrame(costs)
@@ -1981,7 +1967,7 @@ with col5:
             axis=1
         )
 
-        # Variación frente al costo estimado de las unidades producidas
+        # Variación frente al costo estimado
         costs_df["Variación (COP)"] = costs_df.apply(
             lambda row: (
                 row["Costo real de materiales (COP)"] -
@@ -2056,8 +2042,7 @@ with col5:
 
     else:
         st.info("Aún no hay órdenes de producción registradas.")
-
-
+        
 # MÓDULOS PENDIENTES DE INTERFAZ
 else:
 
