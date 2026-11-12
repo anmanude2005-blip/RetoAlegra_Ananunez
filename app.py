@@ -936,13 +936,27 @@ elif modulo == "Compras":
                 details = get_purchase_details(purchase["id"])
 
                 if details:
-
+                    details_df = pd.DataFrame(details)
+                
+                    details_df = details_df.rename(columns={
+                        "code": "Código",
+                        "name": "Material",
+                        "requested_quantity": "Cantidad solicitada",
+                        "unit_cost": "Costo unitario",
+                        "received_quantity": "Cantidad recibida"
+                    })
+                
+                    details_df = details_df.drop(
+                        columns=["product_id"],
+                        errors="ignore"
+                    )
+                
                     st.dataframe(
-                        pd.DataFrame(details),
+                        details_df,
                         use_container_width=True,
                         hide_index=True
                     )
-
+                    
                 if purchase["status"] != "Recibida":
 
                     st.markdown("**Registrar recepción de materiales**")
