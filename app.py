@@ -926,18 +926,97 @@ elif modulo == "Demandas":
                                 f"No fue posible generar el análisis: {error}"
                             )
 #-----------------------------------
-                    if total_shortages > 0:
+                    # CONSULTAR COMPRAS ASOCIADAS A LA DEMANDA
+
+                    associated_purchases = get_demand_purchase_requests(
+                        demand["id"]
+                    )
+
+                    pending_by_code = {}
+
+                    st.markdown("**Solicitudes de compra asociadas**")
+
+                    if associated_purchases:
+
+                        for purchase in associated_purchases:
+
+                            st.info(
+                                f'**{purchase["code"]}** | '
+                                f'Estado: {purchase["status"]}'
+                            )
+
+                            purchase_details = get_purchase_details(
+                                purchase["id"]
+                            )
+
+                            purchase_lines = []
+
+                            for detail in purchase_details:
+
+                                pending = (
+                                    detail["requested_quantity"]
+                                    - detail["received_quantity"]
+                                )
+
+                                pending_by_code[detail["code"]] = (
+                                    pending_by_code.get(
+                                        detail["code"], 0
+                                    ) + max(pending, 0)
+                                )
+
+                                purchase_lines.append({
+                                    "Código": detail["code"],
+                                    "Material": detail["name"],
+                                    "Solicitado": detail["requested_quantity"],
+                                    "Recibido": detail["received_quantity"],
+                                    "Pendiente de recibir": max(pending, 0)
+                                })
+
+                            if purchase_lines:
+
+                                st.dataframe(
+                                    pd.DataFrame(purchase_lines),
+                                    use_container_width=True,
+                                    hide_index=True
+                                )
+
+                    else:
+
+                        st.caption(
+                            "Esta demanda todavía no tiene "
+                            "solicitudes de compra asociadas."
+                        )
+
+                    # CALCULAR FALTANTES NO CUBIERTOS POR COMPRAS
+
+                    uncovered_shortages = 0
+
+                    for item in requirements:
+
+                        pending_purchase = pending_by_code.get(
+                            item["code"], 0
+                        )
+
+                        uncovered_shortages += max(
+                            item["shortage"] - pending_purchase,
+                            0
+                        )
+
+                    if total_shortages > 0 and uncovered_shortages > 0:
 
                         st.warning(
-                            f"Se identificaron {total_shortages:g} "
-                            "unidades faltantes de materiales."
+                            f"Faltantes físicos: {total_shortages:g} "
+                            f"unidades. Pendientes de cubrir con compras: "
+                            f"{uncovered_shortages:g} unidades."
                         )
 
                         if st.button(
                             "Generar solicitud de compra",
                             key=f'compra_{demand["id"]}'
                         ):
+
                             try:
+
                                 purchase_code = generate_document_code(
                                     "OC",
                                     "purchase_requests"
@@ -952,34 +1031,34 @@ elif modulo == "Demandas":
                                     f"Solicitud {purchase_code} "
                                     "generada correctamente."
                                 )
+
                                 st.rerun()
 
                             except ValueError as error:
+
                                 st.info(str(error))
 
                             except Exception as error:
+
                                 st.error(
-                                    f"No fue posible generar la compra: {error}"
+                                    f"No fue posible generar la compra: "
+                                    f"{error}"
                                 )
 
+                    elif total_shortages > 0:
+
+                        st.success(
+                            "Los faltantes de materiales ya están "
+                            "cubiertos por solicitudes de compra existentes. "
+                            "No necesitas generar otra OC."
+                        )
+
                     else:
+
                         st.success(
                             "Hay existencias físicas suficientes "
                             "para atender los requerimientos."
                         )
-
-                else:
-                    st.info(
-                        "No se encontraron componentes. "
-                        "Verifica que el producto tenga una receta activa."
-                    )
-
-    else:
-        st.info("Todavía no hay demandas registradas.")
-
-
-
-
 # COMPRAS
 elif modulo == "Compras":
 
