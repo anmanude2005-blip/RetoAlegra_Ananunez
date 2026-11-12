@@ -1,0 +1,40 @@
+flowchart TD
+    A([Inicio: construcción de SYNTHEX]) --> B[1. Definir el MVP<br/>Problema, alcance, reglas y criterios]
+    B --> C[2. Organizar el repositorio en GitHub<br/>Código, docs y requirements.txt]
+    C --> D[3. Configurar persistencia<br/>database.py + SQLite + synthex.db]
+    D --> E[4. Desarrollar módulos funcionales]
+
+    subgraph MOD[Dominios funcionales en Python]
+      direction LR
+      P[products.py<br/>Catálogo] --> R[recipes.py<br/>Recetas BOM]
+      R --> DM[demands.py<br/>Demandas]
+      DM --> PU[purchases.py<br/>Compras y recepciones]
+      PU --> PR[production.py<br/>Órdenes, reservas y avances]
+      PR --> I[inventory.py<br/>Existencias y movimientos]
+      I --> RP[reports.py<br/>Indicadores y costos]
+      AI[ai_assistant.py<br/>Explicación de faltantes]
+      DU[date_utils.py<br/>Fechas Colombia]
+    end
+
+    E --> F[5. Integrar en app.py<br/>Interfaz y navegación Streamlit]
+    MOD --> F
+    F --> G[6. Configurar dependencias e integraciones<br/>Pandas · Plotly · openpyxl · Google Gemini]
+    G --> H[7. Validar los módulos y el flujo E2E<br/>AL001 / DEM-008]
+    H --> J[8. Publicar desde GitHub<br/>Streamlit Community Cloud]
+    J --> K[Comprobar el enlace público<br/>Acceso desde navegador]
+    K --> L([MVP disponible para evaluación])
+
+    DB[(SQLite<br/>synthex.db)]
+    D --> DB
+    DB -. consulta y persistencia .-> MOD
+    F -. presenta resultados .-> U[Usuario]
+    AI -. explicación con contexto .-> GEM[Google Gemini]
+    G --> GEM
+
+    classDef stage fill:#e9f1f7,stroke:#35536b,color:#142b3d,stroke-width:1.5px;
+    classDef modules fill:#eef7f4,stroke:#397565,color:#183d34,stroke-width:1.2px;
+    classDef platform fill:#fff4e5,stroke:#b87928,color:#593b13,stroke-width:1.2px;
+    class A,L stage;
+    class B,C,D,E,F,G,H,J,K stage;
+    class P,R,DM,PU,PR,I,RP,AI,DU modules;
+    class DB,U,GEM platform;

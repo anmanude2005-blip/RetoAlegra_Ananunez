@@ -1,0 +1,19 @@
+digraph SYNTHEX_BUILD {
+  graph [rankdir=TB, bgcolor="white", pad="0.30", nodesep="0.30", ranksep="0.42", splines=polyline, fontname="Arial", label="SYNTHEX — Construcción, integración y publicación del MVP", labelloc=t, fontsize=20];
+  node [shape=box, style="rounded,filled", fillcolor="#E9F1F7", color="#35536B", fontname="Arial", fontsize=10, margin="0.16,0.11", width=5.6];
+  edge [color="#536B7A", arrowsize=0.75, penwidth=1.2];
+
+  start [label="INICIO\nConstrucción de SYNTHEX", shape=oval, fillcolor="#DCEAF4", width=3.8];
+  req [label="1. DEFINIR EL MVP\nIdentificar problema, alcance, reglas de negocio y criterios de aceptación."];
+  gh [label="2. ORGANIZAR EL REPOSITORIO EN GITHUB\nEstructurar el código Python, la documentación y requirements.txt; registrar los cambios."];
+  dbstep [label="3. CONFIGURAR LA PERSISTENCIA\nCrear database.py, preparar la conexión SQLite, las tablas, las migraciones y los datos iniciales."];
+  modules [label="4. CONSTRUIR LA LÓGICA FUNCIONAL POR MÓDULOS\nproducts.py · recipes.py · demands.py · purchases.py\nproduction.py · inventory.py · reports.py\nai_assistant.py · date_utils.py", fillcolor="#EAF4F0", color="#397565"];
+  ui [label="5. INTEGRAR LA INTERFAZ EN STREAMLIT\nConstruir app.py con navegación, formularios, consultas, tablas, indicadores y conexión con los módulos.", fillcolor="#EAF4F0", color="#397565"];
+  integrations [label="6. CONFIGURAR DEPENDENCIAS E INTEGRACIONES\nstreamlit · pandas · plotly · google-genai · openpyxl\nConfigurar la credencial de Gemini en los secretos del entorno Streamlit."];
+  test [label="7. VALIDAR EL MVP\nProbar catálogo, recetas, demandas, compras, recepciones, órdenes, reservas, avances, inventario, reportes e IA.\nEscenario E2E registrado: AL001 / DEM-008 / OP-010 / OC-007 / OP-011 / ADV-006 / ADV-007"];
+  deploy [label="8. PUBLICAR LA APLICACIÓN\nMantener el código en GitHub y conectar el repositorio con Streamlit Community Cloud."];
+  public [label="COMPROBAR EL ACCESO PÚBLICO\nAbrir la aplicación desde el navegador y validar que el evaluador pueda ingresar mediante el enlace.", fillcolor="#FFF4E5", color="#B87928"];
+  done [label="MVP DISPONIBLE PARA EVALUACIÓN", shape=oval, fillcolor="#DCEFE6", color="#397565", width=4.0];
+
+  start -> req -> gh -> dbstep -> modules -> ui -> integrations -> test -> deploy -> public -> done;
+}
