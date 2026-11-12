@@ -354,7 +354,7 @@ def register_production_advance(code, order_id, quantity, notes=""):
 #----------------
 
 def get_production_orders():
-    """Consulta las órdenes de producción."""
+    """Consulta las órdenes y sus demandas relacionadas."""
 
     conn = get_connection()
 
@@ -363,6 +363,7 @@ def get_production_orders():
             po.id,
             po.code,
             po.demand_id,
+            d.code AS demand_code,
             po.product_id,
             p.code AS product_code,
             p.name AS product_name,
@@ -375,12 +376,12 @@ def get_production_orders():
             po.created_at
         FROM production_orders po
         JOIN products p ON po.product_id = p.id
+        LEFT JOIN demands d ON po.demand_id = d.id
         ORDER BY po.id DESC
     """).fetchall()
 
     conn.close()
     return [dict(row) for row in rows]
-
 
 def cancel_production_order(order_id):
     """
