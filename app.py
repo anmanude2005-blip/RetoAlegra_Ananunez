@@ -473,10 +473,10 @@ elif modulo == "Demandas":
             ):
 
                 st.write(demand["description"] or "Sin descripción")
-st.caption(
-    f'Fecha de creación: '
-    f'{format_colombia_datetime(demand["created_at"])}'
-)
+                st.caption(
+                    f'Fecha de creación: '
+                    f'{format_colombia_datetime(demand["created_at"])}'
+                )
 
                 st.write(
                     f'Unidades solicitadas: {demand["total_units"] or 0}'
