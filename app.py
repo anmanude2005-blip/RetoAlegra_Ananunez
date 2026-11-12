@@ -1858,27 +1858,27 @@ elif modulo == "Reportes":
             "selector": "th",
             "props": [
                 ("background-color", "#183650"),
-                ("color", "#FFFFFF"),
+                ("color", "white"),
                 ("font-weight", "bold"),
-                ("padding", "10px")
+                ("padding", "12px"),
+                ("text-align", "left")
             ]
         },
         {
             "selector": "td",
             "props": [
                 ("color", "#243447"),
-                ("padding", "9px"),
+                ("padding", "10px"),
                 ("border-bottom", "1px solid #E6ECF2")
             ]
         }
-    ])
-
-    st.dataframe(
-        status_style,
-        use_container_width=True,
-        hide_index=True
+    ]).set_table_attributes('style="width:100%;"')
+    
+    st.markdown(
+        status_style.to_html(),
+        unsafe_allow_html=True
     )
-
+    
     # GRÁFICO DE PRODUCCIÓN
     production_chart = pd.DataFrame(
         {"Unidades": [planned_units, produced_units]},
