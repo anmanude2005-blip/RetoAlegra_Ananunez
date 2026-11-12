@@ -25,6 +25,11 @@ def get_production_summary():
                 CASE WHEN status = 'Completada'
                 THEN 1 ELSE 0 END
             ) AS completed_orders,
+            
+            SUM(
+                CASE WHEN status = 'Anulada'
+                THEN 1 ELSE 0 END
+            ) AS cancelled_orders,
 
             COALESCE(SUM(
                 CASE
