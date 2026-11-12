@@ -1,0 +1,28 @@
+digraph SYNTHEX_E2E {
+  graph [rankdir=TB, bgcolor="white", pad="0.28", nodesep="0.34", ranksep="0.46", splines=ortho, fontname="Arial", label="SYNTHEX | Prueba E2E AL001 / DEM-008", labelloc=t, fontsize=20, fontcolor="#183650"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10.5, margin="0.15,0.10", color="#309C96", fillcolor="#E4F5F3", fontcolor="#123E3B", penwidth=1.2];
+  edge [fontname="Arial", fontsize=9.5, color="#496477", fontcolor="#334E60", arrowsize=0.75];
+  A [label="Alta de artículos\nAL001 · Reto / MP005 / MP003 / MP007", fillcolor="#EAF1F7", color="#183650", fontcolor="#183650"];
+  B [label="Receta AL001\n2 unidades de cada componente"];
+  C [label="DEM-008 · Stock Mínimo\n10 unidades solicitadas", fillcolor="#EAF1F7", color="#183650", fontcolor="#183650"];
+  D [label="Requerimiento BOM\n20 unidades de MP005, MP003 y MP007"];
+  E [label="Stock inicial\nMP005: 30 · MP003: 40 · MP007: 15"];
+  F [label="Capacidad inicial\nMP007 limita a 7 unidades fabricables"];
+  G [label="OP-010\n7 unidades", fillcolor="#EAF1F7", color="#183650", fontcolor="#183650"];
+  H [label="Saldo por programar\n3 unidades"];
+  I [label="OC-007\nCompra de 5 unidades MP007", fillcolor="#EAF1F7", color="#183650", fontcolor="#183650"];
+  J [label="REC · Recepción completa\nMP007 pasa de 15 a 20"];
+  K [label="Recalcular capacidad\n3 unidades fabricables"];
+  L [label="OP-011\n3 unidades", fillcolor="#EAF1F7", color="#183650", fontcolor="#183650"];
+  M [label="Liberar OP-010 y OP-011\nReservar 20 unidades de cada componente"];
+  N [label="ADV-006 · OP-010\nFabricar 7 · consumir 14 de cada material\nCosto materiales: COP 119.000"];
+  O [label="ADV-007 · OP-011\nFabricar 3 · consumir 6 de cada material\nCosto materiales: COP 51.000"];
+  P [label="Conciliación final de componentes\nMP003: 20 · MP005: 10 · MP007: 0"];
+  Q [label="DEM-008 COMPLETADA\n10 solicitadas = 10 programadas = 10 fabricadas\n0 pendientes por fabricar / programar", fillcolor="#DDF3E8", color="#20865A", fontcolor="#164B36", penwidth=1.7];
+  A->B->C->D->E->F;
+  F->G; F->H;
+  G->I; H->I;
+  I->J->K->L;
+  G->M; L->M;
+  M->N->O->P->Q;
+}

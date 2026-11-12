@@ -1,0 +1,32 @@
+flowchart TD
+    A[Registrar artículos: componentes y producto terminado] --> B[Crear receta versionada y cantidades por unidad]
+    B --> C[Registrar demanda DEM con cantidad total]
+    C --> D[Calcular materiales requeridos según receta]
+    D --> E[Calcular máximo fabricable: stock físico, reservas y OP en Borrador]
+    E --> F{¿Hay unidades fabricables ahora?}
+    F -- Sí --> G[Crear OP independiente por la cantidad máxima]
+    F -- No --> H[No crear OP; orientar a abastecer materiales]
+    G --> I[Consultar OC asociadas y calcular faltante neto]
+    H --> I
+    I --> J{¿El faltante está cubierto por una OC existente?}
+    J -- Sí --> K[Mostrar OC, estado y cantidades solicitadas/recibidas]
+    J -- No --> L[Crear OC solo por el faltante no cubierto]
+    K --> M[Registrar recepción REC; solo la recepción aumenta stock]
+    L --> M
+    M --> N[Recalcular capacidad y saldo pendiente de la DEM]
+    N --> O{¿Quedan unidades por programar?}
+    O -- Sí --> G
+    O -- No --> P[Liberar cada OP cuando sus materiales estén disponibles]
+    P --> Q[Reservar componentes por OP]
+    Q --> R[Registrar avance ADV]
+    R --> S[Consumir componentes y aumentar producto terminado]
+    S --> T{¿Se completó la cantidad de la OP?}
+    T -- No --> R
+    T -- Sí --> U[Conciliar DEM, OC/REC, consumos y stock actual]
+    U --> V[Fin: demanda completada y trazable]
+
+    classDef action fill:#E4F5F3,stroke:#309C96,color:#123E3B,stroke-width:1.4px;
+    classDef decision fill:#FFF4D6,stroke:#B98A26,color:#4D3B12,stroke-width:1.4px;
+    classDef base fill:#EAF1F7,stroke:#183650,color:#183650,stroke-width:1.4px;
+    class A,B,C,D,E,G,H,I,K,L,M,N,P,Q,R,S,U,V base;
+    class F,J,O,T decision;
