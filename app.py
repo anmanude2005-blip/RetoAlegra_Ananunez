@@ -185,34 +185,30 @@ elif modulo == "Productos":
                 use_container_width=True
             )
 
-            if submitted:
+                if submitted:
 
-                if not code.strip() or not name.strip():
-                    st.error("Debes ingresar el código y el nombre.")
-
-                else:
                     try:
-                        create_product(
-                            code.strip().upper(),
-                            name.strip(),
-                            product_type,
-                            unit,
-                            unit_cost,
-                            initial_stock
+                        code = generate_document_code(
+                            "OP",
+                            "production_orders"
                         )
 
-                        st.success("Producto registrado correctamente.")
+                        create_production_order(
+                            code,
+                            product_id,
+                            quantity,
+                            demand_id if demand_id != 0 else None
+                        )
+
+                        st.success(
+                            f"Orden {code} creada en estado borrador."
+                        )
                         st.rerun()
 
-                    except sqlite3.IntegrityError:
-                        st.error(
-                            "Este código ya existe. "
-                            "Verifica la referencia."
-                        )
-
                     except Exception as error:
-                        st.error(f"No fue posible registrar el producto: {error}")
-
+                        st.error(
+                            f"No fue posible crear la orden: {error}"
+                        )
     st.divider()
     st.subheader("Productos registrados")
 
@@ -1099,11 +1095,44 @@ elif modulo == "Producción":
 
                     with st.form(f'avance_{order["id"]}'):
 
-                        advance_code = st.text_input(
-                            "Código del avance",
-                            placeholder="Ej. ADV-001",
-                            key=f'advance_code_{order["id"]}'
-                        )
+                        # codigo para ingreso manual de documentación, pasado a automatico 
+                        #advance_code = st.text_input(
+                         #   "Código del avance",
+                          #  placeholder="Ej. ADV-001",
+                           # key=f'advance_code_{order["id"]}'
+                        #)
+                                                if advance_submitted:
+
+                            if advance_quantity <= 0:
+
+                                st.error(
+                                    "La cantidad debe ser mayor que cero."
+                                )
+
+                            else:
+                                try:
+                                    advance_code = generate_document_code(
+                                        "ADV",
+                                        "production_advances"
+                                    )
+
+                                    register_production_advance(
+                                        advance_code,
+                                        order["id"],
+                                        advance_quantity,
+                                        notes
+                                    )
+
+                                    st.success(
+                                        f"Avance {advance_code} "
+                                        "registrado correctamente."
+                                    )
+                                    st.rerun()
+
+                                except Exception as error:
+                                    st.error(
+                                        f"No fue posible registrar el avance: {error}"
+                                    )
 
                         advance_quantity = st.number_input(
                             "Unidades fabricadas en este avance",
