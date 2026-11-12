@@ -197,11 +197,12 @@ def release_production_order(order_id):
                 required
             ))
 
-        cursor.execute("""
-            UPDATE production_orders
-            SET status = 'En producción'
-            WHERE id = ?
-        """, (order_id,))
+            cursor.execute("""
+                UPDATE production_orders
+                SET status = 'En producción',
+                    released_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            """, (order_id,))
 
         conn.commit()
 
