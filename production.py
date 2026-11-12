@@ -3,8 +3,12 @@ from database import get_connection
 
 
 #------------------------
+
 def create_production_order(code, product_id, quantity, demand_id=None):
-    """Crea una orden y guarda el costo estimado de materiales."""
+    """
+    Crea una orden de producción, conserva la receta utilizada
+    y valida que no se programe más de lo solicitado en la demanda.
+    """
 
     if quantity <= 0:
         raise ValueError("La cantidad debe ser mayor que cero.")
@@ -13,6 +17,52 @@ def create_production_order(code, product_id, quantity, demand_id=None):
 
     try:
         cursor = conn.cursor()
+
+        # Validar la demanda y su cantidad pendiente por programar
+        if demand_id is not None:
+
+            demand = cursor.execute("""
+                SELECT COALESCE(SUM(quantity), 0) AS requested_quantity
+                FROM demand_details
+                WHERE demand_id = ? AND product_id = ?
+            """, (demand_id, product_id)).fetchone()
+
+            if not demand or demand["requested_quantity"] <= 0:
+                raise ValueError(
+                    "El producto no pertenece a la demanda seleccionada."
+                )
+
+            requested_quantity = demand["requested_quantity"]
+
+            scheduled = cursor.execute("""
+                SELECT COALESCE(SUM(planned_quantity), 0)
+                    AS scheduled_quantity
+                FROM production_orders
+                WHERE demand_id = ?
+                  AND product_id = ?
+                  AND status != 'Anulada'
+            """, (demand_id, product_id)).fetchone()
+
+            scheduled_quantity = scheduled["scheduled_quantity"]
+
+            remaining_to_schedule = max(
+                0,
+                requested_quantity - scheduled_quantity
+            )
+
+            if remaining_to_schedule <= 0:
+                raise ValueError(
+                    "Esta demanda ya tiene toda su cantidad programada. "
+                    "No se pueden crear más órdenes."
+                )
+
+            if quantity > remaining_to_schedule:
+                raise ValueError(
+                    f"La demanda solicita {requested_quantity:g} unidades. "
+                    f"Ya hay {scheduled_quantity:g} programadas. "
+                    f"Solo puedes programar {remaining_to_schedule:g} "
+                    "unidades adicionales."
+                )
 
         # Buscar la receta activa del producto
         recipe = cursor.execute("""
@@ -24,7 +74,7 @@ def create_production_order(code, product_id, quantity, demand_id=None):
         if not recipe:
             raise ValueError("El producto no tiene una receta activa.")
 
-        # Calcular el costo estimado de materiales por unidad
+        # Calcular el costo estimado por unidad
         estimated_cost = cursor.execute("""
             SELECT COALESCE(SUM(rd.quantity * p.unit_cost), 0)
                 AS estimated_unit_material_cost
@@ -37,7 +87,7 @@ def create_production_order(code, product_id, quantity, demand_id=None):
             "estimated_unit_material_cost"
         ]
 
-        # Crear la orden conservando la receta y el costo estimado
+        # Crear la orden
         cursor.execute("""
             INSERT INTO production_orders (
                 code,
@@ -68,6 +118,7 @@ def create_production_order(code, product_id, quantity, demand_id=None):
 
     finally:
         conn.close()
+
 #--------------------------
 
 def release_production_order(order_id):
