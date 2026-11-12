@@ -10,21 +10,46 @@ def get_production_summary():
     result = conn.execute("""
         SELECT
             COUNT(*) AS total_orders,
-            SUM(CASE WHEN status = 'Borrador' THEN 1 ELSE 0 END)
-                AS draft_orders,
-            SUM(CASE WHEN status = 'En producción' THEN 1 ELSE 0 END)
-                AS active_orders,
-            SUM(CASE WHEN status = 'Completada' THEN 1 ELSE 0 END)
-                AS completed_orders,
-            COALESCE(SUM(planned_quantity), 0) AS planned_units,
-            COALESCE(SUM(produced_quantity), 0) AS produced_units
+
+            SUM(
+                CASE WHEN status = 'Borrador'
+                THEN 1 ELSE 0 END
+            ) AS draft_orders,
+
+            SUM(
+                CASE WHEN status = 'En producción'
+                THEN 1 ELSE 0 END
+            ) AS active_orders,
+
+            SUM(
+                CASE WHEN status = 'Completada'
+                THEN 1 ELSE 0 END
+            ) AS completed_orders,
+
+            COALESCE(SUM(
+                CASE
+                    WHEN status IN ('Borrador', 'En producción')
+                    THEN planned_quantity
+                    ELSE 0
+                END
+            ), 0) AS planned_units,
+
+            COALESCE(SUM(produced_quantity), 0)
+                AS produced_units,
+
+            COALESCE(SUM(
+                CASE
+                    WHEN status IN ('Borrador', 'En producción')
+                    THEN planned_quantity - produced_quantity
+                    ELSE 0
+                END
+            ), 0) AS pending_units
+
         FROM production_orders
     """).fetchone()
 
     conn.close()
     return dict(result)
-
-
 def get_purchase_summary():
     """Resume las solicitudes de compra."""
 
