@@ -102,8 +102,8 @@ def create_recipe(product_id, recipe_name, components):
         # Crear la nueva versión
         cursor.execute("""
             INSERT INTO recipes
-            (product_id, version, name, active)
-            VALUES (?, ?, ?, 1)
+            (product_id, version, name, active, created_at)
+            VALUES (?, ?, ?, 1, CURRENT_TIMESTAMP)
         """, (product_id, new_version, recipe_name))
 
         recipe_id = cursor.lastrowid
