@@ -1438,7 +1438,9 @@ elif modulo == "Inventario":
 
     st.divider()
     st.subheader("Historial y descarga de movimientos")
-
+    today_colombia = datetime.now(
+        ZoneInfo("America/Bogota")
+    ).date()
     col_fecha1, col_fecha2 = st.columns(2)
 
     with col_fecha1:
