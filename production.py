@@ -488,3 +488,66 @@ def cancel_production_order(order_id):
 
     finally:
         conn.close()
+
+
+def get_production_advances(order_id):
+    """Consulta todos los avances registrados para una orden."""
+
+    conn = get_connection()
+
+    try:
+        rows = conn.execute("""
+            SELECT
+                pa.id,
+                pa.code,
+                pa.production_order_id,
+                pa.produced_quantity,
+                pa.notes,
+                pa.created_at,
+                COALESCE(
+                    SUM(pc.quantity * pc.unit_cost), 0
+                ) AS material_cost
+            FROM production_advances pa
+            LEFT JOIN production_consumptions pc
+                ON pc.advance_id = pa.id
+            WHERE pa.production_order_id = ?
+            GROUP BY
+                pa.id,
+                pa.code,
+                pa.production_order_id,
+                pa.produced_quantity,
+                pa.notes,
+                pa.created_at
+            ORDER BY pa.id ASC
+        """, (order_id,)).fetchall()
+
+        return [dict(row) for row in rows]
+
+    finally:
+        conn.close()
+
+
+def get_advance_consumptions(advance_id):
+    """Consulta los materiales consumidos en un avance específico."""
+
+    conn = get_connection()
+
+    try:
+        rows = conn.execute("""
+            SELECT
+                p.code,
+                p.name,
+                pc.quantity,
+                pc.unit_cost,
+                (pc.quantity * pc.unit_cost) AS total_cost
+            FROM production_consumptions pc
+            JOIN products p
+                ON p.id = pc.product_id
+            WHERE pc.advance_id = ?
+            ORDER BY p.name
+        """, (advance_id,)).fetchall()
+
+        return [dict(row) for row in rows]
+
+    finally:
+        conn.close()
