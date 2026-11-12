@@ -65,32 +65,137 @@ st.set_page_config(
 init_db()
 
 
-# NAVEGACIÓN CORPORATIVA
-st.sidebar.title("SYNTHEX")
-st.sidebar.caption("Gestión inteligente de fabricación")
+# NAVEGACIÓN CORPORATIVA SYNTHEX
+
+st.sidebar.markdown("""
+<style>
+
+/* Fondo del menú lateral */
+[data-testid="stSidebar"] {
+    background-color: #183650;
+}
+
+/* Espaciado del menú */
+[data-testid="stSidebar"] > div:first-child {
+    padding-top: 1.5rem;
+}
+
+/* Identidad visual */
+.synthex-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 8px 22px 8px;
+    border-bottom: 1px solid #36536A;
+    margin-bottom: 22px;
+}
+
+.synthex-mark {
+    background-color: #55B9B2;
+    color: #183650;
+    font-size: 25px;
+    font-weight: 800;
+    width: 45px;
+    height: 45px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.synthex-name {
+    color: white;
+    font-size: 25px;
+    font-weight: 800;
+    letter-spacing: 2px;
+}
+
+.synthex-tagline {
+    color: #AFC3D1;
+    font-size: 9px;
+    letter-spacing: 1.2px;
+    margin-top: 3px;
+}
+
+/* Título de navegación */
+.nav-section {
+    color: #8FAABA;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    padding: 5px 8px 12px 8px;
+}
+
+/* Botones del menú */
+[data-testid="stSidebar"] .stButton > button {
+    border-radius: 9px;
+    min-height: 43px;
+    text-align: left;
+    justify-content: flex-start;
+    padding-left: 14px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.2s ease;
+}
+
+/* Botones inactivos */
+[data-testid="stSidebar"] button[kind="secondary"] {
+    background-color: transparent;
+    color: #E2EAF0;
+    border: 1px solid transparent;
+}
+
+/* Efecto al pasar el cursor */
+[data-testid="stSidebar"] button[kind="secondary"]:hover {
+    background-color: #294B63;
+    color: white;
+    border: 1px solid #42677D;
+}
+
+/* Botón activo */
+[data-testid="stSidebar"] button[kind="primary"] {
+    background-color: #55B9B2;
+    color: #183650;
+    border: 1px solid #55B9B2;
+    font-weight: 800;
+}
+
+</style>
+
+<div class="synthex-brand">
+    <div class="synthex-mark">S</div>
+    <div>
+        <div class="synthex-name">SYNTHEX</div>
+        <div class="synthex-tagline">
+            MANUFACTURING INTELLIGENCE
+        </div>
+    </div>
+</div>
+
+<div class="nav-section">MENÚ PRINCIPAL</div>
+""", unsafe_allow_html=True)
+
 
 opciones = [
-    "Inicio",
-    "Productos",
-    "Recetas",
-    "Demandas",
-    "Compras",
-    "Producción",
-    "Inventario",
-    "Reportes"
+    ("Inicio", "🏠"),
+    ("Productos", "📦"),
+    ("Recetas", "🧩"),
+    ("Demandas", "📋"),
+    ("Compras", "🛒"),
+    ("Producción", "⚙️"),
+    ("Inventario", "▤"),
+    ("Reportes", "📊")
 ]
 
 if "modulo" not in st.session_state:
     st.session_state.modulo = "Inicio"
 
-st.sidebar.markdown("### MENÚ PRINCIPAL")
-
-for opcion in opciones:
+for opcion, icono in opciones:
 
     activo = st.session_state.modulo == opcion
 
     if st.sidebar.button(
-        opcion,
+        f"{icono}   {opcion}",
         key=f"nav_{opcion}",
         use_container_width=True,
         type="primary" if activo else "secondary"
