@@ -12,7 +12,8 @@ from inventory import (
     get_inventory_movements
 )
 from io import BytesIO
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
+from zoneinfo import ZoneInfo
 from reports import (
     get_production_summary,
     get_purchase_summary,
