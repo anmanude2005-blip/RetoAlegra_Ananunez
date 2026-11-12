@@ -1810,31 +1810,32 @@ elif modulo == "Reportes":
     st.divider()
 
     # PRODUCCIÓN
-st.subheader("Producción")
+    st.subheader("Producción")
 
-col1, col2, col3 = st.columns(3)
+    col1, col2, col3 = st.columns(3)
 
-with col1:
-    with st.container(border=True):
-        st.metric(
-            "Unidades programadas",
-            planned_units
-        )
+    with col1:
+        with st.container(border=True):
+            st.metric(
+                "Unidades programadas",
+                planned_units
+            )
 
-with col2:
-    with st.container(border=True):
-        st.metric(
-            "Unidades producidas",
-            produced_units
-        )
+    with col2:
+        with st.container(border=True):
+            st.metric(
+                "Unidades producidas",
+                produced_units
+            )
 
-with col3:
-    with st.container(border=True):
-        st.metric(
-            "Unidades pendientes",
-            production.get("pending_units") or 0
-        )
+    with col3:
+        with st.container(border=True):
+            st.metric(
+                "Unidades pendientes",
+                production.get("pending_units") or 0
+            )
 
+    # ÓRDENES POR ESTADO
     status_df = pd.DataFrame({
         "Estado": [
             "Borrador",
@@ -1858,6 +1859,7 @@ with col3:
         hide_index=True
     )
 
+    # GRÁFICO DE PRODUCCIÓN
     production_chart = pd.DataFrame(
         {"Unidades": [planned_units, produced_units]},
         index=["Planeadas", "Producidas"]
@@ -1868,6 +1870,7 @@ with col3:
 
     st.divider()
 
+    
     # COMPRAS
     st.subheader("Compras")
 
