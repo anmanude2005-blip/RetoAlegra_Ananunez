@@ -485,7 +485,8 @@ def cancel_production_order(order_id):
 
         cursor.execute("""
             UPDATE production_orders
-            SET status = 'Anulada'
+            SET status = 'Anulada',
+                cancelled_at = CURRENT_TIMESTAMP
             WHERE id = ?
         """, (order_id,))
 
