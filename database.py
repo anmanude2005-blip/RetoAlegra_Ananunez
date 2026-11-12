@@ -50,6 +50,7 @@ cursor.execute("""
             version INTEGER NOT NULL,
             name TEXT NOT NULL,
             active INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT,
             UNIQUE(product_id, version),
             FOREIGN KEY (product_id) REFERENCES products(id)
         )
