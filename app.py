@@ -1837,7 +1837,7 @@ elif modulo == "Reportes":
         gap="large"
     )
 
-   with col_production:
+     with col_production.container(key="synthex_production_panel"):
 
         st.subheader("Producción")
 
