@@ -888,6 +888,51 @@ elif modulo == "Compras":
                 f'{purchase["code"]} | {purchase["status"]}'
             ):
 
+                #---------- 
+                
+                st.caption(
+                    f'Fecha de creación: '
+                    f'{format_colombia_datetime(purchase["created_at"])}'
+                )
+
+                # HISTORIAL DE RECEPCIONES
+                st.markdown("**Historial de recepciones**")
+
+                receipts = get_purchase_receipts(purchase["id"])
+
+                if receipts:
+
+                    receipts_df = pd.DataFrame(receipts)
+
+                    receipts_df["received_at"] = (
+                        receipts_df["received_at"].apply(
+                            format_colombia_datetime
+                        )
+                    )
+
+                    receipts_df = receipts_df.rename(columns={
+                        "code": "Documento REC",
+                        "received_at": "Fecha de recepción",
+                        "product_lines": "Líneas de materiales",
+                        "received_units": "Unidades recibidas"
+                    })
+
+                    st.dataframe(
+                        receipts_df[[
+                            "Documento REC",
+                            "Fecha de recepción",
+                            "Líneas de materiales",
+                            "Unidades recibidas"
+                        ]],
+                        use_container_width=True,
+                        hide_index=True
+                    )
+
+                else:
+                    st.info(
+                        "Esta solicitud todavía no tiene recepciones."
+                    )
+                #----------------------
                 details = get_purchase_details(purchase["id"])
 
                 if details:
