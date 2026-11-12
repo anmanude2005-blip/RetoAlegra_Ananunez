@@ -4,27 +4,30 @@ from database import get_connection
 
 
 def get_recipes():
-    """Consulta las recetas y sus productos terminados."""
+    """Consulta las recetas, sus productos y fechas de creación."""
 
     conn = get_connection()
 
-    recipes = conn.execute("""
-        SELECT
-            r.id,
-            r.product_id,
-            p.name AS product_name,
-            r.version,
-            r.name AS recipe_name,
-            r.active
-            r.created_at
-        FROM recipes r
-        JOIN products p ON r.product_id = p.id
-        ORDER BY p.name, r.version DESC
-    """).fetchall()
+    try:
+        recipes = conn.execute("""
+            SELECT
+                r.id,
+                r.product_id,
+                p.name AS product_name,
+                r.version,
+                r.name AS recipe_name,
+                r.active,
+                r.created_at
+            FROM recipes r
+            JOIN products p
+                ON r.product_id = p.id
+            ORDER BY p.name, r.version DESC
+        """).fetchall()
 
-    conn.close()
-    return [dict(recipe) for recipe in recipes]
+        return [dict(recipe) for recipe in recipes]
 
+    finally:
+        conn.close()
 
 def get_recipe_details(recipe_id):
     """Consulta los componentes de una receta."""
