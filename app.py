@@ -855,14 +855,24 @@ elif modulo == "Demandas":
 
                     df = pd.DataFrame(requirements)
 
+                    materials_display = df[[
+                        "code",
+                        "name",
+                        "required_quantity",
+                        "consumed_quantity",
+                        "physical_stock",
+                        "shortage"
+                    ]].rename(columns={
+                        "code": "Código",
+                        "name": "Material",
+                        "required_quantity": "Requerido",
+                        "consumed_quantity": "Consumido",
+                        "physical_stock": "Existencia física",
+                        "shortage": "Faltante"
+                    })
+
                     st.dataframe(
-                        df[[
-                            "code",
-                            "name",
-                            "required_quantity",
-                            "physical_stock",
-                            "shortage"
-                        ]],
+                        materials_display,
                         use_container_width=True,
                         hide_index=True
                     )
