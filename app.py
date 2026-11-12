@@ -54,23 +54,41 @@ st.set_page_config(
 # Inicializar base de datos
 init_db()
 
-# Navegación
+
+# NAVEGACIÓN CORPORATIVA
 st.sidebar.title("SYNTHEX")
 st.sidebar.caption("Gestión inteligente de fabricación")
 
-modulo = st.sidebar.radio(
-    "NAVEGACIÓN",
-    [
-        "Inicio",
-        "Productos",
-        "Recetas",
-        "Demandas",
-        "Compras",
-        "Producción",
-        "Inventario",
-        "Reportes"
-    ]
-)
+opciones = [
+    "Inicio",
+    "Productos",
+    "Recetas",
+    "Demandas",
+    "Compras",
+    "Producción",
+    "Inventario",
+    "Reportes"
+]
+
+if "modulo" not in st.session_state:
+    st.session_state.modulo = "Inicio"
+
+st.sidebar.markdown("### MENÚ PRINCIPAL")
+
+for opcion in opciones:
+
+    activo = st.session_state.modulo == opcion
+
+    if st.sidebar.button(
+        opcion,
+        key=f"nav_{opcion}",
+        use_container_width=True,
+        type="primary" if activo else "secondary"
+    ):
+        st.session_state.modulo = opcion
+        st.rerun()
+
+modulo = st.session_state.modulo
 
 # PANTALLA DE INICIO
 if modulo == "Inicio":
