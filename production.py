@@ -389,9 +389,19 @@ def register_production_advance(code, order_id, quantity, notes=""):
 
         cursor.execute("""
             UPDATE production_orders
-            SET produced_quantity = ?, status = ?
+            SET produced_quantity = ?,
+                status = ?,
+                completed_at = CASE
+                    WHEN ? = 'Completada' THEN CURRENT_TIMESTAMP
+                    ELSE completed_at
+                END
             WHERE id = ?
-        """, (new_produced, new_status, order_id))
+        """, (
+            new_produced,
+            new_status,
+            new_status,
+            order_id
+        ))
 
         conn.commit()
         return advance_id
