@@ -435,7 +435,10 @@ def get_production_orders():
             (po.planned_quantity - po.produced_quantity)
                 AS pending_quantity,
             po.status,
-            po.created_at
+            po.created_at,
+            po.released_at,
+            po.completed_at,
+            po.cancelled_at
         FROM production_orders po
         JOIN products p ON po.product_id = p.id
         LEFT JOIN demands d ON po.demand_id = d.id
