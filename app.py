@@ -1066,6 +1066,10 @@ elif modulo == "Producción":
                 st.write(
                     f'Demanda asociada: {order["demand_code"] or "Sin asociar"}'
                 )
+                st.caption(
+                    f'Fecha de creación: '
+                    f'{format_colombia_datetime(order["created_at"])}'
+                )
 
                 
                 # HISTORIAL DE AVANCES DE PRODUCCIÓN
