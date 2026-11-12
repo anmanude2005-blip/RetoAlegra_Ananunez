@@ -295,17 +295,59 @@ def create_purchase_from_demand(demand_id, code):
 
         for item in requirements:
 
-            # Material reservado para otras órdenes
-            reserved = cursor.execute("""
-                SELECT COALESCE(
-                    SUM(quantity - consumed_quantity), 0
-                )
-                FROM reservations
-                WHERE product_id = ?
-                AND status = 'Activa'
-            """, (item["product_id"],)).fetchone()[0]
+            # Material ya consumido por órdenes de esta demanda
+            consumed_for_demand = cursor.execute("""
+                SELECT COALESCE(SUM(r.consumed_quantity), 0)
+                FROM reservations r
+                JOIN production_orders po
+                    ON po.id = r.production_order_id
+                WHERE r.product_id = ?
+                AND po.demand_id = ?
+            """, (
+                item["product_id"],
+                demand_id
+            )).fetchone()[0]
 
-            # Compras pendientes de recibir
+            # Material reservado para otras demandas
+            reserved_other = cursor.execute("""
+                SELECT COALESCE(
+                    SUM(r.quantity - r.consumed_quantity), 0
+                )
+                FROM reservations r
+                JOIN production_orders po
+                    ON po.id = r.production_order_id
+                WHERE r.product_id = ?
+                AND r.status = 'Activa'
+                AND (
+                    po.demand_id IS NULL
+                    OR po.demand_id != ?
+                )
+            """, (
+                item["product_id"],
+                demand_id
+            )).fetchone()[0]
+
+            # Material comprometido en borradores de otras demandas
+            draft_committed_other = cursor.execute("""
+                SELECT COALESCE(
+                    SUM(rd.quantity * po.planned_quantity), 0
+                )
+                FROM production_orders po
+                JOIN recipe_details rd
+                    ON rd.recipe_id = po.recipe_id
+                WHERE rd.component_id = ?
+                AND po.status = 'Borrador'
+                AND (
+                    po.demand_id IS NULL
+                    OR po.demand_id != ?
+                )
+            """, (
+                item["product_id"],
+                demand_id
+            )).fetchone()[0]
+
+            # Compras pendientes de recibir para esta demanda
+            # o compras generales sin demanda asociada
             pending_purchase = cursor.execute("""
                 SELECT COALESCE(
                     SUM(pd.quantity - COALESCE(received.total, 0)), 0
@@ -327,13 +369,30 @@ def create_purchase_from_demand(demand_id, code):
                     AND received.product_id = pd.product_id
                 WHERE pd.product_id = ?
                 AND pr.status != 'Recibida'
-            """, (item["product_id"],)).fetchone()[0]
+                AND (
+                    pr.demand_id = ?
+                    OR pr.demand_id IS NULL
+                )
+            """, (
+                item["product_id"],
+                demand_id
+            )).fetchone()[0]
 
-            available = item["physical_stock"] - reserved
+            remaining_required = max(
+                item["required_quantity"] - consumed_for_demand,
+                0
+            )
+
+            available_for_demand = max(
+                item["physical_stock"]
+                - reserved_other
+                - draft_committed_other,
+                0
+            )
 
             shortage = (
-                item["required_quantity"]
-                - available
+                remaining_required
+                - available_for_demand
                 - pending_purchase
             )
 
@@ -343,7 +402,6 @@ def create_purchase_from_demand(demand_id, code):
                     shortage,
                     item["unit_cost"]
                 ))
-
         if not purchase_items:
             raise ValueError(
                 "No hay faltantes pendientes de compra para esta demanda."
