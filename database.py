@@ -232,7 +232,7 @@ def init_db():
             ADD COLUMN demand_id INTEGER
         """)
         #--------------
-        # Agregar costo estimado por unidad a órdenes existentes
+    # Agregar costo estimado por unidad a órdenes existentes
     order_columns = [
         row["name"]
         for row in cursor.execute(
