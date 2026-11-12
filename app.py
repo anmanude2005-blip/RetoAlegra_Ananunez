@@ -1081,6 +1081,10 @@ elif modulo == "Producción":
 
                     advances_df = pd.DataFrame(advances)
 
+                    advances_df["created_at"] = advances_df[
+                        "created_at"
+                    ].apply(format_colombia_datetime)
+                    
                     advances_display = advances_df.rename(columns={
                         "code": "Documento ADV",
                         "created_at": "Fecha de registro",
