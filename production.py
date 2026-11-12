@@ -381,3 +381,58 @@ def get_production_orders():
     conn.close()
     return [dict(row) for row in rows]
 
+
+def cancel_production_order(order_id):
+    """
+    Anula una orden únicamente si está en borrador.
+    Conserva el documento y su historial.
+    """
+
+    conn = get_connection()
+
+    try:
+        cursor = conn.cursor()
+
+        order = cursor.execute("""
+            SELECT id, status
+            FROM production_orders
+            WHERE id = ?
+        """, (order_id,)).fetchone()
+
+        if not order:
+            raise ValueError("La orden de producción no existe.")
+
+        if order["status"] != "Borrador":
+            raise ValueError(
+                "Solo se pueden anular órdenes en estado Borrador."
+            )
+
+        active_reservations = cursor.execute("""
+            SELECT COUNT(*)
+            FROM reservations
+            WHERE production_order_id = ?
+            AND status = 'Activa'
+            AND quantity > consumed_quantity
+        """, (order_id,)).fetchone()[0]
+
+        if active_reservations > 0:
+            raise ValueError(
+                "La orden tiene materiales reservados y no puede anularse."
+            )
+
+        cursor.execute("""
+            UPDATE production_orders
+            SET status = 'Anulada'
+            WHERE id = ?
+        """, (order_id,))
+
+        conn.commit()
+
+        return True
+
+    except Exception:
+        conn.rollback()
+        raise
+
+    finally:
+        conn.close()
