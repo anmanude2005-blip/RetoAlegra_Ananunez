@@ -1,0 +1,37 @@
+digraph SYNTHEX_Process {
+  graph [rankdir=TB, bgcolor="white", pad="0.25", nodesep="0.32", ranksep="0.48", splines=polyline, fontname="Arial", label="SYNTHEX | Flujo operativo vigente", labelloc=t, fontsize=20, fontcolor="#183650"];
+  node [shape=box, style="rounded,filled", fontname="Arial", fontsize=10.5, margin="0.13,0.09", color="#309C96", fillcolor="#E4F5F3", fontcolor="#123E3B", penwidth=1.2];
+  edge [fontname="Arial", fontsize=9.5, color="#496477", fontcolor="#334E60", arrowsize=0.75];
+  A [label="Registrar artículos\ncomponentes + producto terminado"];
+  B [label="Crear receta versionada\ny cantidades por unidad"];
+  C [label="Registrar demanda DEM\ncantidad total requerida", fillcolor="#EAF1F7", color="#183650", fontcolor="#183650"];
+  D [label="Calcular BOM\nmateriales requeridos"];
+  E [label="Calcular máximo fabricable\nstock físico + reservas + OP Borrador"];
+  F [shape=diamond, label="¿Hay unidades\nfabricables ahora?", fillcolor="#FFF4D6", color="#B98A26", fontcolor="#4D3B12", margin="0.12,0.05"];
+  G [label="Crear OP independiente\npor el máximo fabricable", fillcolor="#EAF1F7", color="#183650", fontcolor="#183650"];
+  H [label="No crear OP; orientar\na abastecer materiales"];
+  I [label="Consultar OC asociadas\ny calcular faltante neto"];
+  J [shape=diamond, label="¿El faltante está\ncubierto por una OC?", fillcolor="#FFF4D6", color="#B98A26", fontcolor="#4D3B12"];
+  K [label="Mostrar OC, estado y\ncantidades solicitadas/recibidas"];
+  L [label="Crear OC solo por faltante\nno cubierto", fillcolor="#EAF1F7", color="#183650", fontcolor="#183650"];
+  M [label="Registrar recepción REC\nsolo la recepción aumenta stock"];
+  N [label="Recalcular capacidad\ny saldo pendiente de DEM"];
+  O [shape=diamond, label="¿Quedan unidades\npor programar?", fillcolor="#FFF4D6", color="#B98A26", fontcolor="#4D3B12"];
+  P [label="Liberar cada OP cuando\ntenga materiales suficientes"];
+  Q [label="Reservar componentes\npor OP"];
+  R [label="Registrar avance ADV\n(consumo real)"];
+  S [label="Descontar componentes\ny aumentar producto terminado"];
+  T [shape=diamond, label="¿OP completada?", fillcolor="#FFF4D6", color="#B98A26", fontcolor="#4D3B12"];
+  U [label="Conciliar DEM, OC/REC,\nconsumos y stock actual", fillcolor="#DDF3E8", color="#20865A", fontcolor="#164B36", penwidth=1.6];
+  V [label="Fin: demanda completada\ny trazable", fillcolor="#DDF3E8", color="#20865A", fontcolor="#164B36", penwidth=1.6];
+  A->B->C->D->E->F;
+  F->G [label="Sí"]; F->H [label="No"];
+  G->I; H->I;
+  I->J; J->K [label="Sí"]; J->L [label="No"];
+  K->M; L->M; M->N->O;
+  O->G [label="Sí", minlen=2]; O->P [label="No"];
+  P->Q->R->S->T;
+  T->R [label="No"];
+  T->U [label="Sí"];
+  U->V;
+}

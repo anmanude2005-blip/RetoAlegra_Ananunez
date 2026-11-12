@@ -1,0 +1,25 @@
+flowchart TD
+    A["Alta de artículos<br/>AL001 · Reto / MP005 / MP003 / MP007"] --> B["Receta AL001<br/>2 unidades de cada componente"]
+    B --> C["DEM-008 · Stock Mínimo<br/>10 unidades solicitadas"]
+    C --> D["Requerimiento BOM<br/>20 unidades de MP005, MP003 y MP007"]
+    D --> E["Stock inicial<br/>MP005: 30 · MP003: 40 · MP007: 15"]
+    E --> F["Capacidad inicial<br/>MP007 limita a 7 unidades fabricables"]
+    F --> G["OP-010<br/>7 unidades"]
+    F --> H["Saldo por programar<br/>3 unidades"]
+    H --> I["OC-007<br/>Compra de 5 unidades MP007"]
+    I --> J["REC · Recepción completa<br/>MP007 pasa de 15 a 20"]
+    J --> K["Recalcular capacidad<br/>3 unidades fabricables"]
+    K --> L["OP-011<br/>3 unidades"]
+    G --> M["Liberar OP-010 y OP-011<br/>Reservar 20 unidades de cada componente"]
+    L --> M
+    M --> N["ADV-006 · OP-010<br/>Fabricar 7 · consumir 14 de cada material<br/>Costo: COP 119.000"]
+    N --> O["ADV-007 · OP-011<br/>Fabricar 3 · consumir 6 de cada material<br/>Costo: COP 51.000"]
+    O --> P["Conciliación final<br/>MP003: 20 · MP005: 10 · MP007: 0"]
+    P --> Q[DEM-008 Completada\n10 solicitadas = 10 programadas = 10 fabricadas]
+
+    classDef action fill:#E4F5F3,stroke:#309C96,color:#123E3B,stroke-width:1.5px;
+    classDef document fill:#EAF1F7,stroke:#183650,color:#183650,stroke-width:1.5px;
+    classDef finish fill:#DDF3E8,stroke:#20865A,color:#164B36,stroke-width:2px;
+    class A,B,D,E,F,H,J,K,M,N,O,P action;
+    class C,G,I,L document;
+    class Q finish;

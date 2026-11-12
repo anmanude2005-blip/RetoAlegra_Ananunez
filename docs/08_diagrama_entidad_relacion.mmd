@@ -1,0 +1,22 @@
+erDiagram
+    PRODUCTS ||--|| STOCK_BALANCES : has
+    PRODUCTS ||--o{ RECIPES : has_versions
+    RECIPES ||--|{ RECIPE_DETAILS : contains
+    PRODUCTS ||--o{ RECIPE_DETAILS : component
+    DEMANDS ||--|{ DEMAND_DETAILS : requests
+    PRODUCTS ||--o{ DEMAND_DETAILS : requested_product
+    DEMANDS o|--o{ PURCHASE_REQUESTS : sources
+    PURCHASE_REQUESTS ||--|{ PURCHASE_DETAILS : contains
+    PURCHASE_REQUESTS ||--o{ PURCHASE_RECEIPTS : receives
+    PURCHASE_RECEIPTS ||--|{ PURCHASE_RECEIPT_DETAILS : contains
+    PRODUCTS ||--o{ PURCHASE_DETAILS : material
+    PRODUCTS ||--o{ PURCHASE_RECEIPT_DETAILS : received_material
+    PRODUCTS ||--o{ INVENTORY_MOVEMENTS : moves
+    DEMANDS o|--o{ PRODUCTION_ORDERS : schedules
+    PRODUCTS ||--o{ PRODUCTION_ORDERS : manufactures
+    RECIPES ||--o{ PRODUCTION_ORDERS : uses_version
+    PRODUCTION_ORDERS ||--o{ RESERVATIONS : reserves
+    PRODUCTS ||--o{ RESERVATIONS : reserved_material
+    PRODUCTION_ORDERS ||--o{ PRODUCTION_ADVANCES : advances
+    PRODUCTION_ADVANCES ||--o{ PRODUCTION_CONSUMPTIONS : consumes
+    PRODUCTS ||--o{ PRODUCTION_CONSUMPTIONS : consumed_material

@@ -1,300 +1,137 @@
-# SYNTHEX — Modelo de Datos y Relaciones
-
-**Versión:** 1.0  
-**Estado:** Diseño inicial para el MVP  
-**Base de datos:** SQLite  
-**Motor de desarrollo:** Python
-
----
-
-## 1. Objetivo
-
-Definir la estructura de almacenamiento de información de SYNTHEX, identificando las entidades principales, sus atributos y las relaciones necesarias para gestionar el proceso de fabricación.
-
-El modelo debe permitir trabajar con diferentes productos y recetas sin depender de información fija o exclusiva de la lámpara de demostración.
-
-## 2. Principios de diseño
-
-- Cada producto tendrá un identificador único.
-- Un producto podrá ser un componente o un producto terminado.
-- Un producto terminado podrá tener varias versiones de receta.
-- Una demanda podrá generar varias órdenes de producción.
-- Una orden conservará la versión de receta utilizada.
-- Los inventarios físicos y las reservas se gestionarán por separado.
-- Los movimientos históricos conservarán su trazabilidad.
-- Las compras incrementarán el inventario únicamente al recibir los materiales.
-- Los registros relacionados con una operación crítica deberán actualizarse de forma consistente.
-
-## 3. Entidades principales
-
-### 3.1. Productos (`products`)
-
-Almacena el catálogo de productos y componentes.
-
-Atributos principales:
-
-- `id`: identificador único.
-- `code`: código del producto.
-- `name`: nombre.
-- `product_type`: componente o terminado.
-- `unit`: unidad de medida.
-- `unit_cost`: costo unitario de referencia.
-- `status`: activo o inactivo.
-- `created_at`: fecha de creación.
-
-### 3.2. Recetas (`recipes`)
-
-Almacena las versiones de las recetas de fabricación.
-
-Atributos:
-
-- `id`: identificador.
-- `product_id`: producto terminado asociado.
-- `version`: número de versión.
-- `status`: estado de la receta.
-- `created_at`: fecha de creación.
-
-### 3.3. Detalle de recetas (`recipe_details`)
-
-Define los componentes y las cantidades necesarias para fabricar un producto.
-
-Atributos:
-
-- `id`: identificador.
-- `recipe_id`: receta asociada.
-- `component_id`: producto componente.
-- `quantity`: cantidad necesaria por unidad terminada.
-
-### 3.4. Demandas (`demands`)
-
-Registra las solicitudes de fabricación.
-
-Atributos:
-
-- `id`: identificador.
-- `demand_number`: número de demanda.
-- `request_date`: fecha de solicitud.
-- `status`: estado.
-- `notes`: observaciones.
-
-### 3.5. Detalle de demandas (`demand_details`)
-
-Almacena los productos y cantidades solicitadas.
-
-Atributos:
-
-- `id`: identificador.
-- `demand_id`: demanda asociada.
-- `product_id`: producto solicitado.
-- `quantity_requested`: cantidad solicitada.
-
-### 3.6. Solicitudes de compra (`purchase_requests`)
-
-Registra las necesidades de compra de componentes.
-
-Atributos:
-
-- `id`: identificador.
-- `request_number`: número de solicitud.
-- `request_date`: fecha.
-- `status`: estado.
-
-### 3.7. Detalle de compras (`purchase_details`)
-
-Almacena los componentes y las cantidades solicitadas.
-
-Atributos:
-
-- `id`: identificador.
-- `purchase_request_id`: solicitud asociada.
-- `product_id`: componente.
-- `quantity_requested`: cantidad solicitada.
-- `unit_cost`: costo estimado de compra.
-
-### 3.8. Recepciones de compra (`purchase_receipts`)
-
-Registra la entrada física de los materiales comprados.
-
-Atributos:
-
-- `id`: identificador.
-- `purchase_request_id`: solicitud relacionada.
-- `receipt_date`: fecha de recepción.
-- `status`: estado.
-
-### 3.9. Detalle de recepciones (`purchase_receipt_details`)
-
-Registra las cantidades efectivamente recibidas.
-
-Atributos:
-
-- `id`: identificador.
-- `receipt_id`: recepción asociada.
-- `purchase_detail_id`: detalle de compra relacionado.
-- `quantity_received`: cantidad recibida.
-- `unit_cost`: costo real unitario de recepción.
-
-### 3.10. Órdenes de producción (`production_orders`)
-
-Registra las órdenes de fabricación.
-
-Atributos:
-
-- `id`: identificador.
-- `order_number`: número de orden.
-- `demand_id`: demanda asociada.
-- `product_id`: producto terminado.
-- `recipe_id`: versión de receta utilizada.
-- `quantity_planned`: cantidad planeada.
-- `quantity_produced`: cantidad terminada acumulada.
-- `status`: estado de la orden.
-- `created_at`: fecha de creación.
-
-### 3.11. Reservas (`reservations`)
-
-Registra los materiales comprometidos para cada orden.
-
-Atributos:
-
-- `id`: identificador.
-- `production_order_id`: orden asociada.
-- `product_id`: componente reservado.
-- `quantity_reserved`: cantidad reservada.
-- `quantity_consumed`: cantidad consumida.
-- `status`: activa, consumida o liberada.
-
-### 3.12. Avances de producción (`production_advances`)
-
-Registra cada avance realizado sobre una orden.
-
-Atributos:
-
-- `id`: identificador.
-- `production_order_id`: orden relacionada.
-- `advance_date`: fecha del avance.
-- `quantity_completed`: unidades terminadas en el avance.
-- `notes`: observaciones.
-
-### 3.13. Consumos de producción (`production_consumptions`)
-
-Almacena los materiales efectivamente utilizados en cada avance.
-
-Atributos:
-
-- `id`: identificador.
-- `production_advance_id`: avance asociado.
-- `product_id`: componente consumido.
-- `quantity_consumed`: cantidad consumida.
-- `unit_cost`: costo unitario aplicado.
-
-### 3.14. Existencias (`stock_balances`)
-
-Almacena el saldo actual de cada producto.
-
-Atributos:
-
-- `id`: identificador.
-- `product_id`: producto.
-- `physical_quantity`: cantidad física.
-- `updated_at`: fecha de actualización.
-
-La cantidad reservada se obtiene de las reservas activas. La cantidad disponible se calcula así:
-
-**Disponible = Existencia física − Cantidad reservada.**
-
-### 3.15. Movimientos de inventario (`inventory_movements`)
-
-Conserva el historial de entradas, salidas y ajustes.
-
-Atributos:
-
-- `id`: identificador.
-- `product_id`: producto.
-- `movement_type`: entrada, salida o ajuste.
-- `quantity`: cantidad.
-- `unit_cost`: costo unitario aplicado.
-- `reference_type`: tipo de documento relacionado.
-- `reference_id`: identificador del documento relacionado.
-- `movement_date`: fecha del movimiento.
-
-## 4. Relaciones entre entidades
-
-- Un producto terminado puede tener muchas versiones de receta.
-- Una receta puede contener varios componentes.
-- Un componente puede estar presente en diferentes recetas.
-- Una demanda puede tener varios detalles.
-- Una demanda puede generar varias órdenes de producción.
-- Una orden de producción utiliza una versión específica de receta.
-- Una orden puede tener varias reservas.
-- Una orden puede registrar varios avances.
-- Un avance puede tener varios registros de consumo.
-- Una solicitud de compra puede contener varios componentes.
-- Una solicitud de compra puede tener varias recepciones.
-- Cada producto puede tener múltiples movimientos de inventario.
-- Cada producto tendrá un registro de existencias.
-
-## 5. Representación conceptual
-
-```text
-PRODUCTS
-   |
-   |---- RECIPES ---- RECIPE_DETAILS ---- PRODUCTS
-   |
-   |---- DEMAND_DETAILS ---- DEMANDS
-                                  |
-                                  |
-                           PRODUCTION_ORDERS
-                                  |
-                   --------------|--------------
-                   |             |              |
-              RESERVATIONS  PRODUCTION_ADVANCES |
-                                  |              |
-                         PRODUCTION_CONSUMPTIONS|
-                                                 |
-                                           INVENTORY_MOVEMENTS
-
-PURCHASE_REQUESTS
-       |
-PURCHASE_DETAILS
-       |
-PURCHASE_RECEIPTS
-       |
-PURCHASE_RECEIPT_DETAILS
-       |
-INVENTORY_MOVEMENTS
+# SYNTHEX — Modelo de datos y relaciones
+
+**Versión:** 1.2  
+**Fecha:** 12 de noviembre de 2026  
+**Motor:** SQLite  
+
+## 1. Criterios del modelo
+
+- El catálogo `products` concentra componentes y productos terminados. El campo `product_type` distingue su uso.
+- `stock_balances` guarda el saldo físico; las reservas se guardan aparte.
+- Una receta se versiona en `recipes`; sus componentes y cantidades viven en `recipe_details`.
+- Las demandas, compras, recepciones y órdenes de producción conservan documentos propios.
+- Una demanda puede asociarse a varias órdenes de producción independientes; esta relación DEM 1:N se utiliza en el flujo validado de producción parcial por disponibilidad.
+- Los avances y consumos reales se almacenan en tablas separadas para mantener detalle por evento.
+- `inventory_movements` conserva un registro de entradas y salidas asociado a un producto y a un documento de referencia.
+
+## 2. Entidades y campos principales
+
+Los campos listados describen el esquema observado en `database.py`. Los tipos se indican de forma funcional; SQLite utiliza afinidad de tipos.
+
+| Tabla | Campos principales | Propósito |
+|---|---|---|
+| `products` | `id`, `code` (único), `name`, `product_type`, `unit`, `unit_cost`, `active`, `created_at` | Catálogo de productos terminados y componentes. |
+| `stock_balances` | `id`, `product_id` (único/FK), `physical_stock` | Saldo físico por producto. |
+| `recipes` | `id`, `product_id` (FK), `version`, `name`, `active`, `created_at`, UNIQUE(`product_id`,`version`) | Versiones de receta de un producto terminado. |
+| `recipe_details` | `id`, `recipe_id` (FK), `component_id` (FK a products), `quantity` | Componentes por unidad de receta. |
+| `demands` | `id`, `code` (único), `description`, `status`, `created_at` | Solicitud de fabricación. |
+| `demand_details` | `id`, `demand_id` (FK), `product_id` (FK), `quantity` | Productos y cantidades solicitadas en una demanda. |
+| `purchase_requests` | `id`, `code` (único), `demand_id` (FK opcional), `status`, `created_at` | Solicitud de compra. |
+| `purchase_details` | `id`, `purchase_id` (FK), `product_id` (FK), `quantity`, `unit_cost` | Líneas de materiales solicitadas. |
+| `purchase_receipts` | `id`, `code` (único), `purchase_id` (FK), `received_at` | Evento de recepción asociado a una solicitud. |
+| `purchase_receipt_details` | `id`, `receipt_id` (FK), `product_id` (FK), `quantity`, `unit_cost` | Material y cantidad recibidos en cada recepción. |
+| `inventory_movements` | `id`, `product_id` (FK), `movement_type`, `quantity`, `reference`, `unit_cost`, `created_at` | Entradas y salidas de inventario. |
+| `production_orders` | `id`, `code` (único), `demand_id` (FK opcional), `product_id` (FK), `recipe_id` (FK), `planned_quantity`, `estimated_unit_material_cost`, `produced_quantity`, `status`, `created_at`, `released_at`, `completed_at`, `cancelled_at` | Orden de producción y sus estados/fechas. |
+| `reservations` | `id`, `production_order_id` (FK), `product_id` (FK), `quantity`, `consumed_quantity`, `status` | Material comprometido por orden. |
+| `production_advances` | `id`, `code` (único), `production_order_id` (FK), `produced_quantity`, `notes`, `created_at` | Avance parcial o total de una orden. |
+| `production_consumptions` | `id`, `advance_id` (FK), `product_id` (FK), `quantity`, `unit_cost` | Consumo real por material y avance. |
+
+## 3. Relaciones principales
+
+| Relación | Cardinalidad | Explicación |
+|---|---|---|
+| `products` → `stock_balances` | 1 a 1 | Un producto tiene un registro de saldo físico. `stock_balances.product_id` es único. |
+| `products` → `recipes` | 1 a N | Un producto terminado puede tener varias versiones de receta. |
+| `recipes` → `recipe_details` | 1 a N | Una versión incluye varios componentes. |
+| `products` → `recipe_details` | 1 a N | Un producto tipo Componente puede aparecer en varias recetas. |
+| `demands` → `demand_details` | 1 a N | Una demanda puede solicitar uno o varios productos. |
+| `products` → `demand_details` | 1 a N | Un producto puede aparecer en distintas demandas. |
+| `demands` → `purchase_requests` | 1 a N | Una demanda puede generar solicitudes de compra. La asociación es opcional. |
+| `purchase_requests` → `purchase_details` | 1 a N | Una solicitud contiene líneas de materiales. |
+| `purchase_requests` → `purchase_receipts` | 1 a N | Una solicitud puede recibirse en varios eventos parciales. |
+| `purchase_receipts` → `purchase_receipt_details` | 1 a N | Una recepción registra una o varias líneas recibidas. |
+| `products` → `inventory_movements` | 1 a N | Cada movimiento pertenece a un producto. |
+| `demands` → `production_orders` | 1 a N | Una demanda puede cubrirse con varias órdenes parciales. La asociación es opcional. |
+| `products` → `production_orders` | 1 a N | Cada orden fabrica un producto terminado. |
+| `recipes` → `production_orders` | 1 a N | Cada orden conserva la versión de receta usada. |
+| `production_orders` → `reservations` | 1 a N | Una orden reserva varios componentes. |
+| `production_orders` → `production_advances` | 1 a N | Una orden puede tener varios avances. |
+| `production_advances` → `production_consumptions` | 1 a N | Un avance puede consumir varios materiales. |
+
+## 4. Reglas de integridad y cálculo
+
+### 4.1. Disponibilidad
+
+`available_stock = physical_stock - reserved_stock`
+
+La reserva activa pendiente de consumo se obtiene considerando `quantity - consumed_quantity` para reservas cuyo estado es Activa.
+
+### 4.2. Costo estimado por unidad
+
+Suma de `recipe_details.quantity × products.unit_cost` para todos los componentes de la versión de receta seleccionada.
+
+### 4.3. Costo real
+
+Suma de `production_consumptions.quantity × production_consumptions.unit_cost` para los consumos asociados a los avances de la orden.
+
+### 4.4. Balance de producción
+
+- Unidades programadas vigentes: suma de `planned_quantity` de órdenes en Borrador o En producción.
+- Unidades pendientes vigentes: suma de `planned_quantity - produced_quantity` de órdenes en Borrador o En producción.
+- Unidades producidas históricas: suma de `produced_quantity` reportada por las órdenes.
+- Total de órdenes: conteo de todos los documentos, incluidas las anuladas.
+
+## 5. Diagrama entidad-relación (Mermaid)
+
+El archivo editable se encuentra en `08_diagrama_entidad_relacion.mmd`.
+
+```mermaid
+ erDiagram
+    PRODUCTS ||--|| STOCK_BALANCES : has
+    PRODUCTS ||--o{ RECIPES : has_versions
+    RECIPES ||--|{ RECIPE_DETAILS : contains
+    PRODUCTS ||--o{ RECIPE_DETAILS : component
+    DEMANDS ||--|{ DEMAND_DETAILS : requests
+    PRODUCTS ||--o{ DEMAND_DETAILS : requested_product
+    DEMANDS o|--o{ PURCHASE_REQUESTS : sources
+    PURCHASE_REQUESTS ||--|{ PURCHASE_DETAILS : contains
+    PURCHASE_REQUESTS ||--o{ PURCHASE_RECEIPTS : receives
+    PURCHASE_RECEIPTS ||--|{ PURCHASE_RECEIPT_DETAILS : contains
+    PRODUCTS ||--o{ PURCHASE_DETAILS : material
+    PRODUCTS ||--o{ PURCHASE_RECEIPT_DETAILS : received_material
+    PRODUCTS ||--o{ INVENTORY_MOVEMENTS : moves
+    DEMANDS o|--o{ PRODUCTION_ORDERS : schedules
+    PRODUCTS ||--o{ PRODUCTION_ORDERS : manufactures
+    RECIPES ||--o{ PRODUCTION_ORDERS : uses_version
+    PRODUCTION_ORDERS ||--o{ RESERVATIONS : reserves
+    PRODUCTS ||--o{ RESERVATIONS : reserved_material
+    PRODUCTION_ORDERS ||--o{ PRODUCTION_ADVANCES : advances
+    PRODUCTION_ADVANCES ||--o{ PRODUCTION_CONSUMPTIONS : consumes
+    PRODUCTS ||--o{ PRODUCTION_CONSUMPTIONS : consumed_material
 ```
 
-## 6. Reglas de integridad
+## 6. Producción parcial por demanda y conciliación de materiales
 
-1. No se permitirá registrar una orden liberada si no existe disponibilidad suficiente de componentes.
-2. La creación de una orden no descontará físicamente el inventario.
-3. La liberación de una orden generará las reservas correspondientes.
-4. Los consumos reales reducirán el inventario físico y la reserva correspondiente.
-5. La terminación de unidades generará una entrada al inventario del producto terminado.
-6. Las operaciones de consumo y producción se registrarán de forma transaccional.
-7. Una compra pendiente no aumentará las existencias.
-8. Las recepciones incrementarán las existencias únicamente por las cantidades recibidas.
-9. Las recetas utilizadas por órdenes existentes no cambiarán cuando se cree una nueva versión.
-10. Los movimientos históricos no se eliminarán directamente.
+El modelo soporta varias filas en `production_orders` asociadas al mismo `demand_id`. El flujo validado usa OP independientes: cada documento conserva su cantidad planeada, receta, reservas, avances y estado. No se agrega `released_quantity` ni se modifica la cantidad planeada de una OP después de creada.
 
-## 7. Consideraciones técnicas
+El cálculo de capacidad de producción considera el stock físico, las reservas activas no consumidas y los compromisos de órdenes en Borrador. La demanda muestra el saldo pendiente por programar y permite generar una nueva OP dentro de ese saldo.
 
-- Se utilizarán claves primarias para identificar los registros.
-- Se utilizarán claves foráneas para relacionar las entidades.
-- Se habilitarán las restricciones de integridad referencial de SQLite.
-- Las cantidades y costos se almacenarán con precisión decimal apropiada para evitar errores de cálculo.
-- Las operaciones críticas utilizarán transacciones de base de datos.
-- Se utilizará una estrategia de costo promedio ponderado para las entradas de componentes en el MVP.
-- El costo real de producción se calculará con base en los consumos registrados y sus costos unitarios históricos.
+La consulta de materiales de una demanda presenta:
 
-## 8. Consideraciones de demostración
+- `required_quantity`: necesidad total de componentes según la cantidad demandada y la receta activa consultada.
+- `initial_stock`: stock inicial reconstruido a partir del stock físico actual y el neto de movimientos posteriores a la creación de la demanda.
+- `received_quantity`: suma de recepciones registradas en solicitudes asociadas a la demanda.
+- `consumed_quantity`: suma de los consumos reales registrados en avances de órdenes asociadas a la demanda.
+- `physical_stock`: existencia física actual en `stock_balances`.
+- `shortage`: faltante que sigue sin cubrirse con los materiales disponibles para la demanda, después de considerar consumo, reservas/compromisos de otras órdenes y stock actual.
 
-La base de datos se inicializará automáticamente con los productos y componentes de la lámpara de escritorio.
+La reconstrucción de `initial_stock` depende de que los movimientos posteriores estén registrados en `inventory_movements`. Cambios de stock no registrados como movimientos pueden afectar el valor histórico reconstruido. No se añadió una nueva tabla o columna para esta funcionalidad; se reutilizan las relaciones y movimientos existentes.
 
-La estructura será genérica y permitirá crear nuevos productos, componentes y recetas desde la aplicación.
+## 7. Límites del esquema actual
 
-Se implementará una función de restauración que recuperará el escenario inicial de demostración.
-
----
-
-**Nota:** Este modelo representa el diseño lógico inicial. Los nombres definitivos de columnas, tipos de datos, restricciones e índices se establecerán durante la implementación de SQLite.
+- No hay tabla `users` ni columnas `user_id` en movimientos, compras o producción.
+- No hay tabla de auditoría de cambios.
+- El costo se limita a materiales directos.
+- No existen tablas de pronóstico, inventario de seguridad ni parámetros DOH en el MVP.
+- Los movimientos guardan tipo, cantidad, referencia, costo unitario y fecha; el usuario real que ejecutó el movimiento no queda registrado.
+- El stock inicial presentado en la ficha de materiales de una demanda es reconstruido por movimientos; no es una instantánea histórica persistida en una tabla independiente.
