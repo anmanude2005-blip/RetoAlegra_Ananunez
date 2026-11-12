@@ -15,6 +15,7 @@ def get_products():
             p.unit,
             p.unit_cost,
             p.active,
+            p.created_at,
             COALESCE(s.physical_stock, 0) AS physical_stock
         FROM products p
         LEFT JOIN stock_balances s
@@ -36,8 +37,8 @@ def create_product(code, name, product_type, unit, unit_cost, initial_stock=0):
 
         cursor.execute("""
             INSERT INTO products
-            (code, name, product_type, unit, unit_cost)
-            VALUES (?, ?, ?, ?, ?)
+            (code, name, product_type, unit, unit_cost, created_at)
+            VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)
         """, (code, name, product_type, unit, unit_cost))
 
         product_id = cursor.lastrowid
