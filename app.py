@@ -855,10 +855,30 @@ elif modulo == "Demandas":
 
                     df = pd.DataFrame(requirements)
 
-                    # prueba corrección de tabla en demanda
-                    st.write(
-                        "Columnas disponibles:",
-                        df.columns.tolist()
+                    materials_display = df[[
+                        "code",
+                        "name",
+                        "required_quantity",
+                        "initial_stock",
+                        "received_quantity",
+                        "consumed_quantity",
+                        "physical_stock",
+                        "shortage"
+                    ]].rename(columns={
+                        "code": "Código",
+                        "name": "Material",
+                        "required_quantity": "Requerido",
+                        "initial_stock": "Stock inicial",
+                        "received_quantity": "Compra recibida",
+                        "consumed_quantity": "Consumido",
+                        "physical_stock": "Stock actual",
+                        "shortage": "Faltante"
+                    })
+
+                    st.dataframe(
+                        materials_display,
+                        use_container_width=True,
+                        hide_index=True
                     )
 
                     total_shortages = sum(
