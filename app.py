@@ -1853,7 +1853,7 @@ elif modulo == "Reportes":
 
     st.markdown("**Órdenes por estado**")
 
-    status_style = status_df.style.set_table_styles([
+    status_style = status_df.style.hide(axis="index").set_table_styles([
         {
             "selector": "th",
             "props": [
