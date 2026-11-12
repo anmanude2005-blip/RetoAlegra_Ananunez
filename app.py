@@ -1809,6 +1809,26 @@ elif modulo == "Reportes":
             st.metric("Órdenes anuladas", cancelled_orders)
 
     st.divider()
+
+    # ESTILOS VISUALES DE REPORTES
+
+    st.html("""
+        <style>
+        .st-key-synthex_production_panel {
+            background-color: #EAF1F7;
+            border: 1px solid #D8E3EC;
+            border-radius: 14px;
+            padding: 16px 18px;
+        }
+
+        .st-key-synthex_materials_panel {
+            background-color: #E8F3F1;
+            border: 1px solid #D2E4DF;
+            border-radius: 14px;
+            padding: 16px 18px;
+        }
+        </style>
+    """)
     
     # CUADRÍCULA 1: PRODUCCIÓN Y ÓRDENES POR ESTADO
 
