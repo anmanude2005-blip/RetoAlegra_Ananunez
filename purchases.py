@@ -104,6 +104,15 @@ def get_demand_material_requirements(demand_id):
     try:
         cursor = conn.cursor()
 
+        demand = cursor.execute("""
+            SELECT created_at
+            FROM demands
+            WHERE id = ?
+        """, (demand_id,)).fetchone()
+
+        if not demand:
+            return []
+
         requirements = cursor.execute("""
             SELECT
                 component.id AS product_id,
@@ -150,6 +159,49 @@ def get_demand_material_requirements(demand_id):
                 item["product_id"]
             )).fetchone()[0]
 
+            #-------------------------
+
+                        # Reconstruir el stock existente al crear la demanda
+            net_movements = cursor.execute("""
+                SELECT COALESCE(
+                    SUM(
+                        CASE
+                            WHEN movement_type = 'ENTRADA'
+                                THEN quantity
+                            WHEN movement_type = 'SALIDA'
+                                THEN -quantity
+                            ELSE 0
+                        END
+                    ), 0
+                )
+                FROM inventory_movements
+                WHERE product_id = ?
+                AND created_at > ?
+            """, (
+                item["product_id"],
+                demand["created_at"]
+            )).fetchone()[0]
+
+            initial_stock = (
+                item["physical_stock"] - net_movements
+            )
+
+            # Compras recibidas vinculadas a esta demanda
+            received_quantity = cursor.execute("""
+                SELECT COALESCE(SUM(prd.quantity), 0)
+                FROM purchase_receipt_details prd
+                JOIN purchase_receipts pr
+                    ON pr.id = prd.receipt_id
+                JOIN purchase_requests req
+                    ON req.id = pr.purchase_id
+                WHERE req.demand_id = ?
+                AND prd.product_id = ?
+            """, (
+                demand_id,
+                item["product_id"]
+            )).fetchone()[0]
+            
+            #-------------------------
             # Reservas de otras demandas
             reserved_other = cursor.execute("""
                 SELECT COALESCE(
@@ -212,6 +264,8 @@ def get_demand_material_requirements(demand_id):
                 "unit_cost": item["unit_cost"],
                 "required_quantity": item["required_quantity"],
                 "physical_stock": item["physical_stock"],
+                "initial_stock": initial_stock,
+                "received_quantity": received_quantity,
                 "consumed_quantity": consumed,
                 "shortage": shortage
             })
