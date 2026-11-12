@@ -1,4 +1,4 @@
-SYNTHEX --- Documento de Requerimientos del Producto
+-SYNTHEX --- Documento de Requerimientos del Producto
 Versión: 1.1
 Estado: MVP en desarrollo y validación
 Tipo de documento: Requerimientos funcionales y no funcionales
