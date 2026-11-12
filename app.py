@@ -1109,25 +1109,31 @@ elif modulo == "Producción":
                     use_container_width=True
                 )
 
-                if submitted:
-
-                    if not code.strip():
-                        st.error("Debes ingresar un código para la orden.")
-
-                    else:
-                        try:
-                            create_production_order(
-                                code.strip().upper(),
-                                product_id,
-                                quantity,
-                                demand_id if demand_id != 0 else None
-                            )
-
-                            st.success("Orden creada en estado borrador.")
-                            st.rerun()
-
-                        except Exception as error:
-                            st.error(f"No fue posible crear la orden: {error}")
+        if submitted:
+        
+            try:
+                order_code = generate_document_code(
+                    "OP",
+                    "production_orders"
+                )
+        
+                create_production_order(
+                    order_code,
+                    product_id,
+                    quantity,
+                    demand_id if demand_id != 0 else None
+                )
+        
+                st.success(
+                    f"Orden {order_code} creada en estado borrador."
+                )
+        
+                st.rerun()
+        
+            except Exception as error:
+                st.error(
+                    f"No fue posible crear la orden: {error}"
+                )
 
     st.divider()
     st.subheader("Órdenes registradas")
