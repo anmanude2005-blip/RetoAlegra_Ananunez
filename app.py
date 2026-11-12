@@ -866,7 +866,36 @@ elif modulo == "Producción":
 
                 st.write(f'Producto: {order["product_code"]} - {order["product_name"]}')
 
+                
                 if order["status"] == "Borrador":
+
+                    st.warning(
+                        "Esta orden todavía no ha iniciado producción."
+                    )
+
+                    confirm_cancel = st.checkbox(
+                        f"Confirmo que deseo anular la orden {order['code']}",
+                        key=f'confirm_cancel_{order["id"]}'
+                    )
+
+                    if st.button(
+                        "Anular orden",
+                        key=f'cancel_{order["id"]}',
+                        disabled=not confirm_cancel
+                    ):
+
+                        try:
+                            cancel_production_order(order["id"])
+
+                            st.success(
+                                f'La orden {order["code"]} fue anulada.'
+                            )
+                            st.rerun()
+
+                        except Exception as error:
+                            st.error(
+                                f"No fue posible anular la orden: {error}"
+                            )
 
                     if st.button(
                         "Liberar orden y reservar materiales",
@@ -876,11 +905,15 @@ elif modulo == "Producción":
                         try:
                             release_production_order(order["id"])
 
-                            st.success("Orden liberada y materiales reservados.")
+                            st.success(
+                                "Orden liberada y materiales reservados."
+                            )
                             st.rerun()
 
                         except Exception as error:
-                            st.error(f"No fue posible liberar la orden: {error}")
+                            st.error(
+                                f"No fue posible liberar la orden: {error}"
+                            )
 
                 elif order["status"] == "En producción":
 
