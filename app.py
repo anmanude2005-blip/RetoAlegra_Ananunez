@@ -153,27 +153,29 @@ if modulo == "Inicio":
             hide_index=True
         )
 
-    st.subheader("Estado de producción")
+        st.subheader("Estado de producción")
 
-    col1, col2, col3 = st.columns(3)
-
-    col1.metric(
-        "Órdenes totales",
-        production["total_orders"] or 0
-    )
-
-    col2.metric(
-        "Unidades planeadas",
-        production["planned_units"] or 0
-    )
-
-    col3.metric(
-        "Unidades producidas",
-        production["produced_units"] or 0
-    )
-
-
-
+        col1, col2, col3, col4 = st.columns(4)
+    
+        col1.metric(
+            "Órdenes registradas",
+            production["total_orders"] or 0
+        )
+    
+        col2.metric(
+            "Unidades programadas (vigentes)",
+            production["planned_units"] or 0
+        )
+    
+        col3.metric(
+            "Unidades producidas (histórico)",
+            production["produced_units"] or 0
+        )
+    
+        col4.metric(
+            "Unidades pendientes",
+            production["pending_units"] or 0
+        )
 
 # CATÁLOGO DE PRODUCTOS
 elif modulo == "Productos":
