@@ -67,7 +67,31 @@ def get_purchase_requests():
     conn.close()
     return [dict(row) for row in rows]
 
+#----------------------
 
+def get_demand_purchase_requests(demand_id):
+    """Consulta las solicitudes de compra asociadas a una demanda."""
+
+    conn = get_connection()
+
+    try:
+        rows = conn.execute("""
+            SELECT
+                id,
+                code,
+                status,
+                created_at
+            FROM purchase_requests
+            WHERE demand_id = ?
+            ORDER BY id DESC
+        """, (demand_id,)).fetchall()
+
+        return [dict(row) for row in rows]
+
+    finally:
+        conn.close()
+        
+#----------------------
 def receive_purchase(code, purchase_id, items):
     """
     Registra la recepción de materiales y actualiza inventario.
