@@ -245,6 +245,32 @@ cursor.execute("""
             ADD COLUMN estimated_unit_material_cost REAL NOT NULL DEFAULT 0
         """)
     #-------------------------
+
+    # MIGRACIÓN DE CAMPOS DE TRAZABILIDAD
+
+    migrations = [
+        ("products", "created_at"),
+        ("recipes", "created_at"),
+        ("production_orders", "released_at"),
+        ("production_orders", "completed_at"),
+        ("production_orders", "cancelled_at")
+    ]
+
+    for table, column in migrations:
+
+        existing_columns = [
+            row["name"]
+            for row in cursor.execute(
+                f"PRAGMA table_info({table})"
+            ).fetchall()
+        ]
+
+        if column not in existing_columns:
+            cursor.execute(
+                f"ALTER TABLE {table} ADD COLUMN {column} TEXT"
+            )
+
+#------------------------
     # Carga de datos de demostración, solo si el catálogo está vacío
     product_count = cursor.execute(
         "SELECT COUNT(*) FROM products"
