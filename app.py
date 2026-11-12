@@ -1810,16 +1810,30 @@ elif modulo == "Reportes":
     st.divider()
 
     # PRODUCCIÓN
-    st.subheader("Producción")
+st.subheader("Producción")
 
-    col1, col2, col3 = st.columns(3)
+col1, col2, col3 = st.columns(3)
 
-    col1.metric("Unidades planeadas", planned_units)
-    col2.metric("Unidades producidas", produced_units)
-    col3.metric(
-        "Unidades pendientes",
-        production.get("pending_units") or 0
-    )
+with col1:
+    with st.container(border=True):
+        st.metric(
+            "Unidades programadas",
+            planned_units
+        )
+
+with col2:
+    with st.container(border=True):
+        st.metric(
+            "Unidades producidas",
+            produced_units
+        )
+
+with col3:
+    with st.container(border=True):
+        st.metric(
+            "Unidades pendientes",
+            production.get("pending_units") or 0
+        )
 
     status_df = pd.DataFrame({
         "Estado": [
