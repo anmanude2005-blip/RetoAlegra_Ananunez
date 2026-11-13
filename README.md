@@ -77,7 +77,7 @@ SYNTHEX se encuentra desplegada en Streamlit Community Cloud y puede consultarse
 
 **[INGRESAR A APP SYNTHEX](https://retoalegraananunez-ntkzwtil2ucpinirtcqkjl.streamlit.app/)**
 
-**[INGRESAR A REPOSITORIO]([https://retoalegraananunez-ntkzwtil2ucpinirtcqkjl.streamlit.app/](https://github.com/anmanude2005-blip/RetoAlegra_Ananunez/edit/main/))**
+**[INGRESAR A REPOSITORIO](https://github.com/anmanude2005-blip/RetoAlegra_Ananunez/edit/main/)**
 
 No requiere instalación ni configuración local.
 
