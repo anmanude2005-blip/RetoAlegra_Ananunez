@@ -79,7 +79,9 @@ SYNTHEX se encuentra desplegada en Streamlit Community Cloud y puede consultarse
 
 **[INGRESAR A REPOSITORIO](https://github.com/anmanude2005-blip/RetoAlegra_Ananunez/edit/main/)**
 
-**[INGRESAR A REPOSITORIO](https://drive.google.com/file/d/1cjJMEjXxTwafZnHHCveMIZSKeJ2qSKcO/view?usp=sharing)**
+**[INGRESAR A VIDEO EXPLICATORIO](https://drive.google.com/file/d/1cjJMEjXxTwafZnHHCveMIZSKeJ2qSKcO/view?usp=sharing)**
+
+**[INGRESAR A PRESENTACION DEL CASO](https://docs.google.com/presentation/d/1u-1Z8ZQ4t2IvkSjAZOH3Ktz_XjfddKxd/edit?usp=sharing&ouid=100443218347949609900&rtpof=true&sd=true)**
 
 No requiere instalación ni configuración local.
 
